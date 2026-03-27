@@ -1,7 +1,7 @@
 {
   "name": "apple-health-analysis",
-  "description": "Clinical-grade Apple Health data analysis with 20 peer-reviewed statistical methods, clinical-quality HTML reports with 35+ SVG charts, and multi-language support (EN/ZH).",
-  "version": "1.0.0",
+  "description": "Clinical-grade Apple Health analysis: 21 statistical methods, 30 disease screenings, 59 papers cited, 35+ SVG charts, EN/ZH support.",
+  "version": "2.0.0",
   "author": {
     "name": "labrinyang"
   },
