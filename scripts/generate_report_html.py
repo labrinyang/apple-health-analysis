@@ -759,6 +759,70 @@ def generate_css():
         .gauge-grid {{ grid-template-columns: repeat(2, 1fr); }}
         .card-grid-4 {{ grid-template-columns: repeat(2, 1fr); }}
     }}
+    /* ── Chart Hover Interactions ── */
+    .chart-dot {{
+        cursor: pointer;
+        transition: r 0.15s ease, opacity 0.15s ease;
+    }}
+    .chart-dot:hover {{
+        r: 6;
+        opacity: 1;
+        filter: drop-shadow(0 0 4px currentColor);
+    }}
+    .chart-bar {{
+        cursor: pointer;
+        transition: opacity 0.15s ease, filter 0.15s ease;
+    }}
+    .chart-bar:hover {{
+        opacity: 0.85;
+        filter: brightness(1.1);
+    }}
+    .donut-segment {{
+        cursor: pointer;
+        transition: transform 0.2s ease, filter 0.15s ease;
+        transform-origin: center;
+    }}
+    .donut-segment:hover {{
+        filter: brightness(1.15) drop-shadow(0 2px 6px rgba(0,0,0,0.15));
+        transform: scale(1.03);
+    }}
+    .heatmap-cell {{
+        cursor: pointer;
+        transition: stroke 0.15s ease, stroke-width 0.15s ease;
+    }}
+    .heatmap-cell:hover {{
+        stroke: {C["text"]};
+        stroke-width: 2;
+    }}
+    .gauge-ring {{
+        cursor: pointer;
+        transition: filter 0.2s ease;
+    }}
+    .gauge-ring:hover {{
+        filter: drop-shadow(0 0 6px currentColor);
+    }}
+    /* Tooltip */
+    #chart-tooltip {{
+        position: fixed;
+        pointer-events: none;
+        background: rgba(26,26,26,0.92);
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 1.4;
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.12s ease;
+        max-width: 220px;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        white-space: pre-line;
+    }}
+    #chart-tooltip.visible {{
+        opacity: 1;
+    }}
     """
 
 # ============================================================================
@@ -779,9 +843,9 @@ def svg_circular_gauge(score, label="", size=110, stroke_width=8):
     letter = grade_letter(score)
     return f'''<svg viewBox="0 0 {size} {size}" width="{size}" height="{size}" style="display:block;margin:0 auto;">
   <circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{COLORS["border_light"]}" stroke-width="{stroke_width}" />
-  <circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{color}" stroke-width="{stroke_width}"
+  <circle class="gauge-ring" cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{color}" stroke-width="{stroke_width}"
     stroke-dasharray="{filled:.1f} {gap:.1f}" stroke-dashoffset="{circumference * 0.25:.1f}"
-    stroke-linecap="round" transform="rotate(-90 {cx} {cy})" />
+    stroke-linecap="round" transform="rotate(-90 {cx} {cy})" data-tip="Score: {score}/100 ({letter})" />
   <text x="{cx}" y="{cy - 4}" text-anchor="middle" font-size="22" font-weight="700" fill="{color}">{letter}</text>
   <text x="{cx}" y="{cy + 12}" text-anchor="middle" font-size="12" font-weight="600" fill="{COLORS["text"]}">{score}</text>
   <text x="{cx}" y="{cy + 24}" text-anchor="middle" font-size="8" fill="{COLORS["text_muted"]}">/ 100</text>
@@ -863,10 +927,14 @@ def svg_line_chart(data_points, width=600, height=200, color=None, fill=True,
         tx1, ty1 = to_x(t1[0]), to_y(t1[1])
         trend_path = f'<line x1="{tx0:.1f}" y1="{ty0:.1f}" x2="{tx1:.1f}" y2="{ty1:.1f}" stroke="{COLORS["danger"]}" stroke-width="2" stroke-dasharray="8,4" />'
 
-    # Dots
+    # Dots with hover tooltips
     dots = ""
     if show_dots and len(points) <= 30:
-        dots = "".join(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="3" fill="{c}" />' for x, y in points)
+        for i, (x, y) in enumerate(points):
+            val = data_points[i] if i < len(data_points) and data_points[i] is not None else ""
+            lbl = x_labels[i] if x_labels and i < len(x_labels) else ""
+            tip = f"{lbl}: {val:.1f}" if isinstance(val, (int, float)) else str(val)
+            dots += f'<circle class="chart-dot" cx="{x:.1f}" cy="{y:.1f}" r="3.5" fill="{c}" opacity="0.7" data-tip="{_s(tip)}" />'
 
     # Y axis labels
     y_labels_svg = ""
@@ -903,6 +971,11 @@ def svg_line_chart(data_points, width=600, height=200, color=None, fill=True,
   {sec_path}
   {trend_path}
   {dots}
+  {"" if (show_dots and len(points) <= 30) else "".join(
+      f'<circle class="chart-dot" cx="{points[min(i, len(points)-1)][0]:.1f}" cy="{points[min(i, len(points)-1)][1]:.1f}" r="8" fill="transparent" data-tip="{_s(x_labels[i] if x_labels and i < len(x_labels) else "")}: {data_points[i]:.1f}" />'
+      for i in range(0, len(data_points), max(1, len(data_points) // 20))
+      if data_points[i] is not None and i < len(points)
+  ) if x_labels and len(points) > 5 else ""}
 </svg>'''
 
 
@@ -947,7 +1020,8 @@ def svg_donut_chart(segments, size=200, inner_ratio=0.6, title=""):
              f"A {r:.2f},{r:.2f} 0 {large},1 {x2_o:.2f},{y2_o:.2f} "
              f"L {x1_i:.2f},{y1_i:.2f} "
              f"A {inner_r:.2f},{inner_r:.2f} 0 {large},0 {x2_i:.2f},{y2_i:.2f} Z")
-        paths += f'<path d="{d}" fill="{color}" />'
+        tip_text = f"{_s(label)}: {value:.1f} ({pct*100:.1f}%)"
+        paths += f'<path class="donut-segment" d="{d}" fill="{color}" data-tip="{tip_text}" />'
 
         # Legend item
         pct_str = f"{pct * 100:.1f}%"
@@ -983,7 +1057,7 @@ def svg_horizontal_bar(items, width=500, bar_height=28, max_val=None, show_value
         y = i * (bar_height + 8) + 5
         bw = (value / max_val) * chart_w if max_val else 0
         bars += f'<text x="{padding_left - 8}" y="{y + bar_height / 2 + 4:.1f}" text-anchor="end" font-size="12" fill="{COLORS["text_secondary"]}">{_s(label)}</text>'
-        bars += f'<rect x="{padding_left}" y="{y}" width="{bw:.1f}" height="{bar_height}" fill="{color}" rx="4" />'
+        bars += f'<rect class="chart-bar" x="{padding_left}" y="{y}" width="{bw:.1f}" height="{bar_height}" fill="{color}" rx="4" data-tip="{_s(label)}: {fmt(value)}" />'
         if show_values:
             bars += f'<text x="{padding_left + bw + 6:.1f}" y="{y + bar_height / 2 + 4:.1f}" font-size="11" fill="{COLORS["text_muted"]}">{fmt(value)}</text>'
 
@@ -1004,7 +1078,8 @@ def svg_stacked_bar(segments, width=400, height=36, labels=True):
     x = 0
     for label, value, color in segments:
         w = (value / total) * width
-        bar_svg += f'<rect x="{x:.1f}" y="0" width="{w:.1f}" height="{height}" fill="{color}" />'
+        pct_tip = value / total * 100
+        bar_svg += f'<rect class="chart-bar" x="{x:.1f}" y="0" width="{w:.1f}" height="{height}" fill="{color}" data-tip="{_s(label)}: {value:.1f} ({pct_tip:.1f}%)" />'
         x += w
         pct = value / total * 100
         legend_html += f'<span style="display:inline-flex;align-items:center;gap:4px;margin-right:12px;font-size:12px;color:{COLORS["text_secondary"]}"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:{color}"></span>{_s(label)} ({pct:.0f}%)</span>'
@@ -1073,7 +1148,9 @@ def svg_heatmap(matrix, row_labels, col_labels, width=500, cell_size=52, title="
             x = label_w + c * cell_size
             y = label_h + r * cell_size
             text_color = "#fff" if intensity > 0.5 else COLORS["text"]
-            cells += f'<rect x="{x}" y="{y}" width="{cell_size}" height="{cell_size}" fill="{bg}" stroke="#fff" stroke-width="1" />'
+            rl = row_labels[r] if r < len(row_labels) else ""
+            cl = col_labels[c] if c < len(col_labels) else ""
+            cells += f'<rect class="heatmap-cell" x="{x}" y="{y}" width="{cell_size}" height="{cell_size}" fill="{bg}" stroke="#fff" stroke-width="1" data-tip="{_s(rl)} × {_s(cl)}: r={val:.3f}" />'
             cells += f'<text x="{x + cell_size / 2}" y="{y + cell_size / 2 + 4}" text-anchor="middle" font-size="11" font-weight="600" fill="{text_color}">{val:.2f}</text>'
 
     # Row labels
@@ -1173,6 +1250,10 @@ def svg_circadian_curve(hourly_data, width=600, height=220, color=None, label=""
   {x_labels}
   <path d="{band_d}" fill="{c}" opacity="0.15" />
   <path d="{mean_d}" fill="none" stroke="{c}" stroke-width="2.5" stroke-linejoin="round" />
+  {"".join(
+      f'<circle class="chart-dot" cx="{to_x(int(h)):.1f}" cy="{to_y(means[hours.index(h)]):.1f}" r="4" fill="{c}" opacity="0.6" data-tip="{h}:00  Mean: {means[hours.index(h)]:.1f}{chr(10)}P25-P75: {p25s[hours.index(h)]:.1f} – {p75s[hours.index(h)]:.1f}" />'
+      for h in hours
+  )}
   <text x="{padding_left + chart_w}" y="{padding_top + chart_h + 18}" text-anchor="end" font-size="9" fill="{COLORS["text_muted"]}">shaded = night</text>
 </svg>'''
 
@@ -2827,6 +2908,38 @@ def generate_html(base, adv, lang="en"):
   }}
   window.addEventListener('scroll', onScroll);
   onScroll();
+}})();
+
+// ── Chart Tooltip System ──
+(function() {{
+  var tip = document.createElement('div');
+  tip.id = 'chart-tooltip';
+  document.body.appendChild(tip);
+
+  document.addEventListener('mousemove', function(e) {{
+    if (tip.classList.contains('visible')) {{
+      var x = e.clientX + 12, y = e.clientY - 8;
+      if (x + tip.offsetWidth > window.innerWidth) x = e.clientX - tip.offsetWidth - 8;
+      if (y + tip.offsetHeight > window.innerHeight) y = e.clientY - tip.offsetHeight - 8;
+      tip.style.left = x + 'px';
+      tip.style.top = y + 'px';
+    }}
+  }});
+
+  document.addEventListener('mouseover', function(e) {{
+    var el = e.target.closest('[data-tip]');
+    if (el) {{
+      tip.textContent = el.getAttribute('data-tip');
+      tip.classList.add('visible');
+    }}
+  }});
+
+  document.addEventListener('mouseout', function(e) {{
+    var el = e.target.closest('[data-tip]');
+    if (el) {{
+      tip.classList.remove('visible');
+    }}
+  }});
 }})();
 </script>
 </body>
