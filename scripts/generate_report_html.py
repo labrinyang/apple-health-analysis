@@ -80,6 +80,17 @@ I18N = {
         "footer_generated": "Generated",
         "footer_methods_from": "methods from",
         "footer_publications": "peer-reviewed publications",
+        "disease_screening": "Disease Risk Screening",
+        "screening_disclaimer": "These are screening estimates based on consumer wearable data, NOT clinical diagnoses. A positive screen means further clinical evaluation is recommended.",
+        "conditions_screened": "Conditions Screened",
+        "elevated_risks": "Elevated Risks",
+        "moderate_risks": "Moderate Risks",
+        "low_risks": "Low Risks",
+        "risk_factors": "Risk Factors",
+        "clinical_recommendation": "Clinical Recommendation",
+        "paper_references": "References",
+        "screening_not_diagnosis": "Screening, not diagnosis",
+        "no_screening_data": "No conditions had sufficient data for screening.",
     },
     "zh": {
         "title": "综合健康评估报告",
@@ -142,11 +153,25 @@ I18N = {
         "footer_generated": "生成于",
         "footer_methods_from": "种方法，引用",
         "footer_publications": "篇同行评审论文",
+        "disease_screening": "疾病风险筛查",
+        "screening_disclaimer": "以下为基于消费级可穿戴设备数据的筛查估计，并非临床诊断。筛查阳性意味着建议进一步临床评估。",
+        "conditions_screened": "筛查病种",
+        "elevated_risks": "升高风险",
+        "moderate_risks": "中等风险",
+        "low_risks": "低风险",
+        "risk_factors": "风险因素",
+        "clinical_recommendation": "临床建议",
+        "paper_references": "参考文献",
+        "screening_not_diagnosis": "筛查非诊断",
+        "no_screening_data": "无足够数据进行疾病筛查。",
     },
 }
 
-def t(key, lang="en"):
+_LANG = "en"  # Module-level language; set by generate_html()
+
+def t(key, lang=None):
     """Get translated string."""
+    lang = lang or _LANG
     return I18N.get(lang, I18N["en"]).get(key, I18N["en"].get(key, key))
 
 # ============================================================================
@@ -1438,6 +1463,182 @@ def section_risk_stratification(base):
     return f'''<div class="section" id="risk-stratification">
   <h2 class="section-title">Risk Stratification</h2>
   {cards}
+</div>'''
+
+
+def section_disease_screening(adv):
+    """Disease Risk Screening section -- prominent, clinically actionable cards."""
+    C = COLORS
+    drs = adv.get("disease_risk_screening")
+    if not drs or not isinstance(drs, dict):
+        return ""
+    if "error" in drs:
+        return ""
+    screenings = drs.get("screenings", [])
+
+    # -- Summary counts --
+    total = drs.get("conditions_screened", len(screenings))
+    elevated_count = 0
+    moderate_count = 0
+    low_count = 0
+    for s in screenings:
+        rl = (s.get("risk_level") or "").lower()
+        if rl in ("elevated", "high"):
+            elevated_count += 1
+        elif rl == "moderate":
+            moderate_count += 1
+        else:
+            low_count += 1
+
+    # -- Empty screenings guard --
+    if not screenings:
+        return f'''<div class="section" id="disease-screening">
+  <h2 class="section-title">{_s(t("disease_screening"))}</h2>
+  <div style="padding:16px 20px;background:{C["warning_bg"]};border-left:4px solid {C["warning"]};border-radius:8px;margin-bottom:20px;font-size:14px;color:{C["text"]}">
+    {_s(t("screening_disclaimer"))}
+  </div>
+  <p style="text-align:center;color:{C["text_muted"]};padding:40px 0;font-size:15px;">{_s(t("no_screening_data"))}</p>
+</div>'''
+
+    # -- Group and sort by risk level --
+    order = {"elevated": 0, "high": 0, "moderate": 1, "low": 2}
+    sorted_screenings = sorted(
+        screenings,
+        key=lambda s: (order.get((s.get("risk_level") or "low").lower(), 2), -(s.get("risk_pct") or 0))
+    )
+
+    # -- Helper: bar color based on percentage --
+    def bar_color(pct):
+        if pct >= 75:
+            return C["danger"]
+        if pct >= 50:
+            return C["primary"]  # orange
+        if pct >= 25:
+            return C["warning"]
+        return C["success"]
+
+    # -- Helper: risk level styling --
+    def level_border(rl):
+        rl = (rl or "").lower()
+        if rl in ("elevated", "high"):
+            return C["danger"]
+        if rl == "moderate":
+            return C["warning"]
+        return C["success"]
+
+    def level_bg(rl):
+        rl = (rl or "").lower()
+        if rl in ("elevated", "high"):
+            return C["danger_bg"]
+        if rl == "moderate":
+            return C["warning_bg"]
+        return C["success_bg"]
+
+    def level_text_color(rl):
+        rl = (rl or "").lower()
+        if rl in ("elevated", "high"):
+            return C["danger"]
+        if rl == "moderate":
+            return C["warning"]
+        return C["success"]
+
+    # -- Build condition cards --
+    cards_html = ""
+    for idx, sc in enumerate(sorted_screenings):
+        condition = sc.get("condition", "Unknown")
+        risk_level = (sc.get("risk_level") or "low").lower()
+        score = sc.get("score", 0)
+        max_score = sc.get("max_score", 1)
+        risk_pct = sc.get("risk_pct", 0)
+        factors = sc.get("factors", [])
+        recommendation = sc.get("recommendation", "")
+        references = sc.get("references", [])
+
+        border_c = level_border(risk_level)
+        bg_c = level_bg(risk_level)
+        text_c = level_text_color(risk_level)
+        b_color = bar_color(risk_pct)
+        bar_width = min(risk_pct, 100)
+        level_display = risk_level.upper()
+
+        # Factors list
+        factors_html = ""
+        if factors:
+            items = "".join(f"<li style='margin-bottom:3px;'>{_s(f)}</li>" for f in factors)
+            factors_html = f"""<div style="margin-top:10px;">
+  <div style="font-weight:600;font-size:13px;color:{C['text_secondary']};margin-bottom:4px;">{_s(t("risk_factors"))}</div>
+  <ul style="margin:0;padding-left:20px;font-size:13px;color:{C['text']};line-height:1.6;">{items}</ul>
+</div>"""
+
+        # Recommendation box
+        rec_html = ""
+        if recommendation:
+            rec_html = f"""<div style="margin-top:10px;padding:10px 14px;background:{C['bg_alt']};border-radius:6px;font-size:13px;">
+  <span style="font-weight:600;color:{C['text_secondary']};">{_s(t("clinical_recommendation"))}:</span>
+  <span style="color:{C['text']};">{_s(recommendation)}</span>
+</div>"""
+
+        # References (collapsible)
+        refs_html = ""
+        if references:
+            ref_items = "".join(f"<li style='margin-bottom:2px;'>{_s(r)}</li>" for r in references)
+            refs_html = f"""<details style="margin-top:10px;">
+  <summary style="font-size:12px;color:{C['text_muted']};cursor:pointer;font-weight:600;">{_s(t("paper_references"))} ({len(references)})</summary>
+  <ul style="margin:6px 0 0 0;padding-left:20px;font-size:11px;color:{C['text_muted']};line-height:1.5;">{ref_items}</ul>
+</details>"""
+
+        cards_html += f"""<div style="background:{C['bg_card']};border:1px solid {C['border']};border-left:5px solid {border_c};border-radius:10px;padding:20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+    <div style="font-size:17px;font-weight:700;color:{C['text']};">{_s(condition)}</div>
+    <span style="display:inline-block;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:700;color:#fff;background:{text_c};">{level_display}</span>
+  </div>
+  <div style="margin-top:14px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="flex:1;background:{C['border_light']};border-radius:6px;height:14px;overflow:hidden;">
+        <div style="width:{bar_width:.1f}%;height:100%;background:{b_color};border-radius:6px;transition:width 0.3s;"></div>
+      </div>
+      <div style="font-size:13px;font-weight:700;color:{C['text']};white-space:nowrap;">{score}/{max_score}</div>
+      <div style="font-size:13px;color:{C['text_muted']};white-space:nowrap;">{risk_pct:.1f}%</div>
+    </div>
+  </div>
+  {factors_html}
+  {rec_html}
+  {refs_html}
+</div>
+"""
+
+    # -- Assemble section --
+    return f'''<div class="section" id="disease-screening">
+  <h2 class="section-title">{_s(t("disease_screening"))}</h2>
+
+  <!-- Disclaimer banner -->
+  <div style="padding:16px 20px;background:{C["warning_bg"]};border-left:4px solid {C["warning"]};border-radius:8px;margin-bottom:24px;font-size:14px;color:{C["text"]};line-height:1.6;">
+    <strong style="color:{C["warning"]};">{_s(t("screening_not_diagnosis"))}</strong><br>
+    {_s(t("screening_disclaimer"))}
+  </div>
+
+  <!-- Summary dashboard -->
+  <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:16px;margin-bottom:28px;">
+    <div style="background:{C["bg_card"]};border:1px solid {C["border"]};border-radius:10px;padding:20px;text-align:center;">
+      <div style="font-size:36px;font-weight:800;color:{C["primary"]};">{total}</div>
+      <div style="font-size:13px;color:{C["text_secondary"]};margin-top:4px;">{_s(t("conditions_screened"))}</div>
+    </div>
+    <div style="background:{C["danger_bg"]};border:1px solid {C["danger"]}33;border-radius:10px;padding:20px;text-align:center;">
+      <div style="font-size:36px;font-weight:800;color:{C["danger"]};">{elevated_count}</div>
+      <div style="font-size:13px;color:{C["danger"]};margin-top:4px;">{_s(t("elevated_risks"))}</div>
+    </div>
+    <div style="background:{C["warning_bg"]};border:1px solid {C["warning"]}33;border-radius:10px;padding:20px;text-align:center;">
+      <div style="font-size:36px;font-weight:800;color:{C["warning"]};">{moderate_count}</div>
+      <div style="font-size:13px;color:{C["warning"]};margin-top:4px;">{_s(t("moderate_risks"))}</div>
+    </div>
+    <div style="background:{C["success_bg"]};border:1px solid {C["success"]}33;border-radius:10px;padding:20px;text-align:center;">
+      <div style="font-size:36px;font-weight:800;color:{C["success"]};">{low_count}</div>
+      <div style="font-size:13px;color:{C["success"]};margin-top:4px;">{_s(t("low_risks"))}</div>
+    </div>
+  </div>
+
+  <!-- Condition cards -->
+  {cards_html}
 </div>'''
 
 
@@ -2833,6 +3034,7 @@ def generate_navigation():
         ("executive-summary", "Executive Summary"),
         ("health-dashboard", "Health Dashboard"),
         ("risk-stratification", "Risk Stratification"),
+        ("disease-screening", "Disease Screening"),
         ("body-composition", "Body Composition"),
         ("cardiovascular", "Cardiovascular"),
         ("autonomic-nervous-system", "Autonomic / HRV"),
@@ -2861,6 +3063,8 @@ def generate_navigation():
 
 def generate_html(base, adv, lang="en"):
     """Assemble the full HTML report."""
+    global _LANG
+    _LANG = lang
     css = generate_css()
     nav = generate_navigation()
 
@@ -2874,6 +3078,10 @@ def generate_html(base, adv, lang="en"):
         sections.append(s)
 
     s = section_risk_stratification(base)
+    if s:
+        sections.append(s)
+
+    s = section_disease_screening(adv)
     if s:
         sections.append(s)
 
