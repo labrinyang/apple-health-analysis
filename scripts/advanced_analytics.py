@@ -691,6 +691,8 @@ def cosinor(times_hours, values, period=24.0):
 
     M, b_cos, b_sin = beta[0], beta[1], beta[2]
     amplitude = math.sqrt(b_cos ** 2 + b_sin ** 2)
+    # Model: Y = M + A*cos(wt - phi). Expanding: beta = A*cos(phi), gamma = A*sin(phi).
+    # Peak at t = phi/omega, where phi = atan2(gamma, beta) = atan2(b_sin, b_cos).
     acrophase_rad = math.atan2(b_sin, b_cos)
     acrophase_hours = (acrophase_rad / omega) % period
 
@@ -3145,10 +3147,14 @@ def main():
                 nonlinear["hr_dfa"] = dfa_result
                 result["methods_applied"].append("Detrended Fluctuation Analysis")
 
-        # Poincare on HRV (use raw HRV measurements as RR-interval proxies)
+        # Poincare on HRV SDNN values (NOTE: this applies Poincare to session-level
+        # SDNN measurements, NOT beat-to-beat RR intervals. Results reflect variability
+        # of HRV across sessions, not the classical RR-interval Poincare analysis.
+        # Published SD1/SD2 norms (Brennan 2001) are for RR intervals — interpret with caution.)
         if n_hrv >= 20:
             poincare = poincare_plot(hrv_vals)
             if poincare:
+                poincare["caveat"] = "Applied to session-level SDNN values, not beat-to-beat RR intervals. Published norms may not directly apply."
                 nonlinear["hrv_poincare"] = poincare
                 result["methods_applied"].append("Poincare Plot Analysis")
 
@@ -3504,6 +3510,23 @@ def main():
             else:
                 ws_classification = "OK"
 
+        def _compute_weight_trend(wts):
+            """Compute actual weight trend in kg/year from weight time series."""
+            if not wts or len(wts) < 3:
+                return None
+            first_dt = wts[0][0]
+            x_days = [(dt - first_dt).days for dt, _ in wts]
+            y_w = [w for _, w in wts]
+            n_w = len(x_days)
+            mx_w = sum(x_days) / n_w
+            my_w = sum(y_w) / n_w
+            ssxy = sum((a - mx_w) * (b - my_w) for a, b in zip(x_days, y_w))
+            ssxx = sum((a - mx_w) ** 2 for a in x_days)
+            if ssxx == 0:
+                return None
+            slope = ssxy / ssxx
+            return round(slope * 365.25, 2)
+
         # Daylight: compute daily average in minutes
         avg_daylight_min = None
         if daylight_ts:
@@ -3554,7 +3577,7 @@ def main():
             is_val=result.get("circadian_quantification", {}).get("hr_rhythm_stability", {}).get("interdaily_stability") if isinstance(result.get("circadian_quantification", {}).get("hr_rhythm_stability"), dict) else None,
             iv_val=result.get("circadian_quantification", {}).get("hr_rhythm_stability", {}).get("intradaily_variability") if isinstance(result.get("circadian_quantification", {}).get("hr_rhythm_stability"), dict) else None,
             day_night_ratio=None,  # computed inside
-            weight_trend_kg_yr=(result.get("biological_age_models", {}) or {}).get("biological_age", {}).get("components", {}).get("bmi_delta"),
+            weight_trend_kg_yr=_compute_weight_trend(weight_ts),
             walking_speed=avg_walking_speed,
             stair_speed=avg_stair_speed,
             walking_steadiness=ws_classification,
