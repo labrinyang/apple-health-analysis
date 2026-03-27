@@ -1,0 +1,33 @@
+{
+  "name": "apple-health-analysis",
+  "metadata": {
+    "description": "Mayo Clinic-grade Apple Health data analysis with 20 peer-reviewed statistical methods and 35+ SVG visualizations"
+  },
+  "owner": {
+    "name": "labrinyang",
+    "email": "labrinyang@users.noreply.github.com"
+  },
+  "plugins": [
+    {
+      "name": "apple-health-analysis",
+      "description": "Deep analysis of Apple Health export data using Granger Causality, Transfer Entropy, CCM, Sample Entropy, DFA, Kovatchev glucose indices, Cosinor analysis, Bayesian change points, and biological age estimation. Generates clinical-quality HTML reports with 35+ SVG charts.",
+      "version": "1.0.0",
+      "author": {
+        "name": "labrinyang"
+      },
+      "source": "./",
+      "category": "health",
+      "tags": [
+        "health",
+        "apple-health",
+        "cgm",
+        "heart-rate",
+        "sleep",
+        "glucose",
+        "data-analysis",
+        "statistics",
+        "clinical"
+      ]
+    }
+  ]
+}
