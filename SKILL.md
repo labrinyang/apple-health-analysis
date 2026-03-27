@@ -1,7 +1,7 @@
 ---
 name: apple-health-analysis
 description: >
-  Mayo Clinic-grade deep analysis of Apple Health export data. Parses the XML from iPhone's
+  Clinical-grade deep analysis of Apple Health export data. Parses the XML from iPhone's
   Health app export and produces a comprehensive clinical-quality health assessment report
   using 20+ peer-reviewed statistical methods including Granger Causality, Transfer Entropy,
   Convergent Cross Mapping, Sample Entropy, DFA, Cosinor analysis, Kovatchev glucose risk

@@ -1,6 +1,6 @@
 {
   "name": "apple-health-analysis",
-  "description": "Mayo Clinic-grade Apple Health data analysis with 20 peer-reviewed statistical methods, clinical-quality HTML reports with 35+ SVG charts, and multi-language support (EN/ZH).",
+  "description": "Clinical-grade Apple Health data analysis with 20 peer-reviewed statistical methods, clinical-quality HTML reports with 35+ SVG charts, and multi-language support (EN/ZH).",
   "version": "1.0.0",
   "author": {
     "name": "labrinyang"

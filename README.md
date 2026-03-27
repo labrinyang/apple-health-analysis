@@ -1,6 +1,6 @@
 # Apple Health Deep Analysis
 
-**Mayo Clinic-grade health data analysis for Apple Health exports.**
+**Clinical-grade health data analysis for Apple Health exports.**
 
 A Claude Code skill that transforms raw Apple Health XML exports into comprehensive clinical-quality health assessment reports, applying 20+ peer-reviewed statistical methods with beautiful HTML visualization.
 

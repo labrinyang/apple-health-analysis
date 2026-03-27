@@ -1,7 +1,7 @@
 {
   "name": "apple-health-analysis",
   "metadata": {
-    "description": "Mayo Clinic-grade Apple Health data analysis with 20 peer-reviewed statistical methods and 35+ SVG visualizations"
+    "description": "Clinical-grade Apple Health data analysis with 20 peer-reviewed statistical methods and 35+ SVG visualizations"
   },
   "owner": {
     "name": "labrinyang",
