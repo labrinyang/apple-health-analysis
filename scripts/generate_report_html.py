@@ -597,6 +597,25 @@ def generate_css():
     .interpretation strong {{
         color: var(--text);
     }}
+    /* AI Narrative placeholders */
+    .ai-narrative {{
+        padding: 16px 20px;
+        margin: 12px 0;
+        border-left: 3px solid {C["primary"]};
+        background: {C["bg_alt"]};
+        border-radius: 0 8px 8px 0;
+        font-size: 14px;
+        line-height: 1.7;
+        min-height: 20px;
+    }}
+    .ai-narrative:empty::before {{
+        content: '';
+    }}
+    .ai-narrative h4 {{ margin: 12px 0 6px; font-size: 15px; font-weight: 600; }}
+    .ai-narrative ul, .ai-narrative ol {{ margin: 8px 0; padding-left: 20px; }}
+    .ai-narrative li {{ margin: 4px 0; }}
+    .ai-narrative strong {{ color: {C["primary_dark"]}; }}
+    .ai-narrative p {{ margin: 8px 0; }}
     .recommendation {{
         background: {C["info_bg"]};
         border-radius: 8px;
@@ -1283,85 +1302,10 @@ def section_header(base, adv):
 
 
 def section_executive_summary(base, adv):
-    """Executive summary with 5 bullet points and evidence grades."""
-    cs = base.get("composite_scores", {})
-    overall = cs.get("overall", 0)
-    risks = base.get("risk_stratification", [])
-    tm = base.get("trend_momentum", {})
-    bio = safe_get(adv, "biological_age_models", "biological_age", default={})
-    fitness = safe_get(adv, "biological_age_models", "fitness_age", default={})
-    glucose = base.get("glucose", {})
-    weight_reg = safe_get(base, "body_composition", "weight", "regression", default={})
-
-    findings = []
-
-    # 1. Overall health score
-    letter = grade_letter(overall)
-    findings.append((
-        "B" if overall >= 50 else "C",
-        f'Overall health score is <strong>{overall:.0f}/100 (Grade {letter})</strong>. '
-        f'This reflects a composite of 8 health dimensions weighted by clinical importance.'
-    ))
-
-    # 2. Risk alerts
-    high_risks = [r for r in risks if r.get("level") == "HIGH"]
-    if high_risks:
-        risk_titles = ", ".join(r.get("title", "") for r in high_risks[:3])
-        findings.append((
-            "A",
-            f'<strong>{len(high_risks)} high-priority risk(s) identified</strong>: {_s(risk_titles)}. '
-            f'These require attention and lifestyle modification.'
-        ))
-
-    # 3. Weight trend
-    kg_yr = weight_reg.get("kg_per_year")
-    if kg_yr:
-        findings.append((
-            "A",
-            f'Weight is increasing at <strong>{fmt(kg_yr)} kg/year</strong> (R\u00b2={fmt(weight_reg.get("r_squared"), 2)}). '
-            f'Mann-Kendall test confirms a statistically significant increasing trend.'
-        ))
-
-    # 4. Biological age
-    bio_age = bio.get("biological_age")
-    chrono = bio.get("chronological_age")
-    if bio_age and chrono:
-        gap = bio_age - chrono
-        findings.append((
-            "B",
-            f'Estimated biological age is <strong>{fmt(bio_age)} years</strong> vs chronological age of {fmt(chrono)}, '
-            f'indicating <strong>{fmt(abs(gap))} years of {"accelerated" if gap > 0 else "decelerated"} aging</strong>. '
-            f'Fitness age estimate is {fmt(fitness.get("fitness_age"))} years.'
-        ))
-
-    # 5. Metabolic health
-    tir = safe_get(glucose, "time_in_range", "target_70_180", "pct")
-    if tir:
-        findings.append((
-            "A",
-            f'Glucose time-in-range is <strong>{fmt(tir)}%</strong> (target >70%), with CV of {fmt(glucose.get("cv_pct"))}% '
-            f'({glucose.get("cv_stability", "unknown")} pattern). eA1c estimated at {fmt(glucose.get("eA1c"))}%.'
-        ))
-
-    # Activity trend
-    steps_30 = safe_get(tm, "steps", "last_30d")
-    steps_all = safe_get(tm, "steps", "all_time")
-    if steps_30 and steps_all:
-        findings.append((
-            "B",
-            f'Recent 30-day step average is <strong>{fmt(steps_30, 0)} steps/day</strong> vs all-time average of {fmt(steps_all, 0)}, '
-            f'indicating a {"declining" if steps_30 < steps_all * 0.8 else "stable" if steps_30 > steps_all * 0.9 else "moderately declining"} activity trend.'
-        ))
-
-    items = ""
-    for grade, text in findings[:5]:
-        items += f'<li style="margin-bottom:12px">{evidence_badge(grade)} {text}</li>'
-
+    """Executive summary with empty narrative placeholder for AI to fill."""
     return f'''<div class="section" id="executive-summary">
-  <h2 class="section-title">Executive Summary</h2>
-  <div class="card">
-    <ul style="list-style:none;padding:0">{items}</ul>
-  </div>
+  <h2 class="section-title">{t("executive_summary")}</h2>
+  <div class="ai-narrative" id="narrative-executive-summary"></div>
 </div>'''
 
 
@@ -1393,29 +1337,13 @@ def section_health_dashboard(base):
   <div class="gauge-score">{score}/100</div>
 </div>'''
 
-    # Find weakest / strongest
-    if dims:
-        weakest = min(dims.items(), key=lambda x: x[1])
-        strongest = max(dims.items(), key=lambda x: x[1])
-        interp = (
-            f'Your overall health score of <strong>{overall:.0f}/100</strong> places you in the '
-            f'<strong>{grade_letter(overall)}</strong> grade tier. '
-            f'Your strongest dimension is <strong>{dim_labels.get(strongest[0], strongest[0])}</strong> '
-            f'at {strongest[1]}/100, while <strong>{dim_labels.get(weakest[0], weakest[0])}</strong> '
-            f'at {weakest[1]}/100 represents the greatest opportunity for improvement. '
-            f'Scores below 50 indicate areas that are below population-average benchmarks for your age and sex.'
-        )
-    else:
-        interp = ""
-
     return f'''<div class="section" id="health-dashboard">
-  <h2 class="section-title">Health Dashboard</h2>
+  <h2 class="section-title">{t("health_dashboard")}</h2>
   <div class="card" style="text-align:center;margin-bottom:24px">
-    <div class="card-header">Overall Health Score</div>
+    <div class="card-header">{t("overall_score")}</div>
     {svg_circular_gauge(overall, size=180, stroke_width=16)}
   </div>
   <div class="gauge-grid">{dim_gauges}</div>
-  <div class="interpretation">{interp}</div>
 </div>'''
 
 
@@ -1433,31 +1361,9 @@ def section_risk_stratification(base):
         title = r.get("title", "")
         detail = r.get("detail", "")
 
-        # Generate clinical significance and recommendation based on title
-        clinical = ""
-        rec = ""
-        title_lower = title.lower()
-        if "bmi" in title_lower:
-            clinical = "BMI in the obese range is associated with increased risk for type 2 diabetes, cardiovascular disease, and sleep apnea."
-            rec = "Target a caloric deficit of 500 kcal/day through combined dietary modification and increased physical activity. Aim for 0.5-1 kg weight loss per week."
-        elif "vo2" in title_lower:
-            clinical = "Low cardiorespiratory fitness is one of the strongest predictors of all-cause mortality, independent of BMI."
-            rec = "Incorporate 150 minutes/week of moderate-intensity aerobic exercise (brisk walking, cycling) with 2 sessions of vigorous activity to improve VO2 Max."
-        elif "weight gain" in title_lower:
-            clinical = "A sustained positive weight trajectory at this rate would add significant cardiometabolic risk within 2-3 years."
-            rec = "Track caloric intake, increase daily NEAT (non-exercise activity thermogenesis), and consider consulting a dietitian for a structured plan."
-        elif "activity" in title_lower or "steps" in title_lower:
-            clinical = "Below 7,500 steps/day is associated with increased sedentary-related mortality risk."
-            rec = "Set a progressive target: add 1,000 steps/day each week until reaching 8,000-10,000 steps consistently."
-        elif "exercise" in title_lower or "frequency" in title_lower:
-            clinical = "Infrequent exercise limits cardiovascular adaptation and metabolic benefits."
-            rec = "Schedule at least 3 structured exercise sessions per week, prioritizing consistency over intensity initially."
-
         cards += f'''<div class="alert-card {level_class}">
   <div class="alert-title">{icon} [{level}] {_s(title)}</div>
   <div class="alert-detail"><strong>Data:</strong> {_s(detail)}</div>
-  {"<div class='alert-detail' style='margin-top:4px'><strong>Clinical significance:</strong> " + clinical + "</div>" if clinical else ""}
-  {"<div class='alert-detail' style='margin-top:4px'><strong>Recommendation:</strong> " + rec + "</div>" if rec else ""}
 </div>'''
 
     return f'''<div class="section" id="risk-stratification">
@@ -1639,6 +1545,7 @@ def section_disease_screening(adv):
 
   <!-- Condition cards -->
   {cards_html}
+  <div class="ai-narrative" id="narrative-disease-screening"></div>
 </div>'''
 
 
@@ -1722,31 +1629,10 @@ def section_body_composition(base, adv):
   <div class="metric-note">tau={fmt(mk.get("tau"), 3)}, p={fmt(mk.get("p_value"), 4)}, n={mk.get("n", "?")}</div>
 </div>'''
 
-    # Interpretation
-    kg_yr = regression.get("kg_per_year", 0)
     r2 = regression.get("r_squared", 0)
-    interp = (
-        f'Your current weight of <strong>{fmt(latest_w)} kg</strong> gives a BMI of <strong>{fmt(bmi)}</strong> '
-        f'({bmi_cat}). Over the tracking period, weight has increased at <strong>{fmt(kg_yr)} kg/year</strong> '
-        f'(R\u00b2={fmt(r2, 2)}), indicating a strong and consistent upward trajectory. '
-    )
-    if decomp:
-        fat_pct = decomp.get("fat_pct", 0)
-        interp += (
-            f'Of the total {fmt(decomp.get("total_kg"), 1)} kg gained, <strong>{fmt(decomp.get("fat_kg"), 1)} kg '
-            f'({fat_pct:.0f}%) was fat mass</strong> and {fmt(decomp.get("lean_kg"), 1)} kg ({100-fat_pct:.0f}%) '
-            f'was lean mass. This fat-dominant gain pattern suggests caloric surplus without sufficient resistance training.'
-        )
-
-    rec = (
-        f'Target a gradual weight reduction of 0.5 kg/week through a 500 kcal/day deficit. '
-        f'Prioritize protein intake (1.6-2.2 g/kg lean mass) and add 2-3 resistance training sessions per week '
-        f'to preserve lean mass during weight loss. Your current trajectory projects to '
-        f'{fmt(latest_w + kg_yr, 0)} kg in one year without intervention.'
-    )
 
     return f'''<div class="section" id="body-composition">
-  <h2 class="section-title">Body Composition</h2>
+  <h2 class="section-title">{t("body_composition")}</h2>
   <div class="card">{weight_chart}</div>
   <div class="card-grid" style="margin-bottom:16px">
     <div class="metric-card">
@@ -1771,8 +1657,7 @@ def section_body_composition(base, adv):
   {"<div class='card'><div class='card-header'>Weight Gain Decomposition</div>" + decomp_bar + "</div>" if decomp_bar else ""}
   {mk_html}
   {"<div class='card'>" + bf_chart + "</div>" if bf_chart else ""}
-  <div class="interpretation">{interp}</div>
-  <div class="recommendation">{rec}</div>
+  <div class="ai-narrative" id="narrative-body-composition"></div>
 </div>'''
 
 
@@ -1851,48 +1736,12 @@ def section_cardiovascular(base, adv):
     dipping = circ.get("dipping_pattern", "")
     dn_diff = circ.get("day_night_difference")
 
-    # Interpretation
+    # RHR assessment for metric card display
     rhr_mean = rhr.get("mean", 0)
     rhr_cat = "Excellent" if rhr_mean < 60 else "Good" if rhr_mean < 70 else "Average" if rhr_mean < 80 else "Above Average" if rhr_mean < 90 else "High"
-    pi = base.get("personal_info", {})
-    age = pi.get("age", 0)
-
-    interp = (
-        f'Your resting heart rate of <strong>{fmt(rhr_mean)} bpm</strong> falls in the '
-        f'<strong>\'{rhr_cat}\'</strong> range. For a {fmt(age, 0)}-year-old {pi.get("sex", "").lower()}, '
-        f'a target below 70 bpm would indicate good cardiovascular conditioning (Fox et al. 2007, CMAJ). '
-        f'Each 10 bpm reduction is associated with approximately 20% lower cardiovascular mortality risk. '
-    )
-    if vo2:
-        interp += (
-            f'Your VO2 Max of {fmt(vo2.get("mean"))} mL/kg/min is in the <strong>{vo2_cat}</strong> '
-            f'category for your age group. '
-        )
-    if day_night_ratio:
-        interp += (
-            f'Your day/night HR ratio is {fmt(day_night_ratio, 2)} with a {_s(dipping)} dipping pattern '
-            f'(difference: {fmt(dn_diff, 0)} bpm). '
-        )
-
-    # Lagged correlation for steps->RHR
-    lag = safe_get(base, "lagged_correlations", "weekly_steps_to_rhr", default={})
-    lag2 = lag.get("lag_2_weeks", {})
-    rec = ""
-    if lag2 and lag2.get("r"):
-        rec = (
-            f'Based on your data showing a 2-week lagged correlation between steps and RHR (r={fmt(lag2["r"], 2)}), '
-            f'increasing daily steps to 8,000+ should produce measurable RHR improvement within 14 days. '
-            f'Additionally, incorporate 2-3 sessions of sustained aerobic exercise (30+ minutes at 60-70% max HR) '
-            f'per week to improve VO2 Max.'
-        )
-    else:
-        rec = (
-            f'Incorporate 2-3 sessions of sustained aerobic exercise (30+ minutes at 60-70% max HR) per week. '
-            f'Aim to increase daily steps to 8,000+ for measurable cardiovascular improvement.'
-        )
 
     return f'''<div class="section" id="cardiovascular">
-  <h2 class="section-title">Cardiovascular Health</h2>
+  <h2 class="section-title">{t("cardiovascular")}</h2>
   {"<div class='card'>" + rhr_chart + "</div>" if rhr_chart else ""}
   <div class="card-grid" style="margin-bottom:16px">
     <div class="metric-card">
@@ -1914,8 +1763,7 @@ def section_cardiovascular(base, adv):
   </div>
   {"<div class='card'><div class='card-header'>Heart Rate Zone Distribution</div>" + zone_donut + "</div>" if zone_donut else ""}
   {recovery_html}
-  <div class="interpretation">{interp}</div>
-  <div class="recommendation">{rec}</div>
+  <div class="ai-narrative" id="narrative-cardiovascular"></div>
 </div>'''
 
 
@@ -1954,59 +1802,10 @@ def section_autonomic(base, adv):
     if poincare:
         poincare_svg = svg_poincare(poincare.get("sd1_ms"), poincare.get("sd2_ms"), size=200)
 
-    # HRV assessment
     mean_hrv = overall.get("mean", 0)
-    pi = base.get("personal_info", {})
-    age = pi.get("age", 25)
-    # For age 20-29, normal SDNN > 40ms
-    if mean_hrv > 50:
-        hrv_cat = "Good"
-    elif mean_hrv > 35:
-        hrv_cat = "Below Average"
-    elif mean_hrv > 20:
-        hrv_cat = "Low"
-    else:
-        hrv_cat = "Very Low"
-
-    # DFA interpretation
-    dfa_interp = ""
-    if dfa:
-        alpha = dfa.get("alpha", 0)
-        if alpha > 1.0:
-            dfa_cat = "correlated (reduced complexity)"
-        elif alpha > 0.5:
-            dfa_cat = "fractal-like (healthy complexity)"
-        else:
-            dfa_cat = "anti-correlated (high randomness)"
-        dfa_interp = f'DFA \u03b1 = {fmt(alpha, 3)} indicates <strong>{dfa_cat}</strong> heart rate dynamics (R\u00b2={fmt(dfa.get("r_squared"), 3)}).'
-
-    interp = (
-        f'Your mean HRV (SDNN) of <strong>{fmt(mean_hrv)} ms</strong> is in the <strong>{hrv_cat}</strong> range '
-        f'for a {fmt(age, 0)}-year-old. Normal SDNN for this age group is typically 40-80 ms '
-        f'(Nunan et al. 2010, Scand J Med Sci Sports). '
-    )
-    if poincare:
-        sd1 = poincare.get("sd1_ms", 0)
-        sd2 = poincare.get("sd2_ms", 0)
-        ratio = poincare.get("sd1_sd2_ratio", 0)
-        csi = poincare.get("csi", 0)
-        cvi = poincare.get("cvi", 0)
-        interp += (
-            f'Poincar\u00e9 analysis shows SD1={fmt(sd1)} ms (parasympathetic/short-term) and '
-            f'SD2={fmt(sd2)} ms (overall/long-term), ratio={fmt(ratio, 2)}. '
-            f'CSI (Cardiac Sympathetic Index)={fmt(csi, 2)}, CVI (Cardiac Vagal Index)={fmt(cvi, 2)}. '
-        )
-    if dfa_interp:
-        interp += dfa_interp
-
-    rec = (
-        f'To improve HRV: practice daily slow-breathing exercises (6 breaths/min for 5-10 minutes), '
-        f'ensure consistent sleep timing, and avoid alcohol before bed. Regular aerobic exercise '
-        f'has been shown to increase SDNN by 10-15% over 8-12 weeks.'
-    )
 
     return f'''<div class="section" id="autonomic-nervous-system">
-  <h2 class="section-title">Autonomic Nervous System</h2>
+  <h2 class="section-title">{t("autonomic_ns")}</h2>
   {"<div class='card'>" + hrv_chart + "</div>" if hrv_chart else ""}
   <div class="card-grid" style="margin-bottom:16px">
     <div class="metric-card">
@@ -2027,8 +1826,7 @@ def section_autonomic(base, adv):
   </div>
   {"<div class='card'><div class='card-header'>Poincar&eacute; Plot (SD1 vs SD2)</div>" + poincare_svg + "</div>" if poincare_svg else ""}
   {"<div class='card'>" + noct_chart + "</div>" if noct_chart else ""}
-  <div class="interpretation">{interp}</div>
-  <div class="recommendation">{rec}</div>
+  <div class="ai-narrative" id="narrative-autonomic"></div>
 </div>'''
 
 
@@ -2136,37 +1934,8 @@ def section_glucose(base, adv):
 <thead><tr><th>Date</th><th>Type</th><th>Pre</th><th>During</th><th>Post</th></tr></thead>
 <tbody>{rows}</tbody></table>'''
 
-    # Interpretation
-    tir_pct = safe_get(tir, "target_70_180", "pct", default=0)
-    cv = glucose.get("cv_pct", 0)
-    interp = (
-        f'Your glucose time-in-range is <strong>{fmt(tir_pct)}%</strong> '
-        f'(consensus target: >70% for non-diabetic CGM monitoring). '
-        f'Mean glucose is {fmt(overall.get("mean"))} mg/dL with a CV of {fmt(cv)}% '
-        f'({glucose.get("cv_stability", "unknown")}; target <36% for stable glycemic control). '
-        f'GMI is {fmt(glucose.get("gmi"))}% and estimated A1c is {fmt(glucose.get("eA1c"))}% '
-        f'(normal <5.7%). '
-        f'MAGE (Mean Amplitude of Glycemic Excursions) is {fmt(glucose.get("mage"))} mg/dL and '
-        f'MODD (Mean of Daily Differences) is {fmt(glucose.get("modd"))} mg/dL. '
-    )
-    if lbgi_hbgi:
-        interp += (
-            f'Kovatchev indices show LBGI={fmt(lbgi_hbgi.get("lbgi"))} ({_s(lbgi_hbgi.get("lbgi_risk"))}) '
-            f'and HBGI={fmt(lbgi_hbgi.get("hbgi"))} ({_s(lbgi_hbgi.get("hbgi_risk"))}). '
-        )
-    if gvp:
-        interp += f'Glycemic Variability Percentage (GVP) is {fmt(gvp.get("gvp_pct"))}% ({_s(gvp.get("interpretation", "").replace("_", " "))}). '
-
-    rec = (
-        f'Your metabolic health is strong with excellent TIR. To maintain: '
-        f'continue limiting refined carbohydrates, especially in the evening '
-        f'(your data shows peak glucose at ~18:50). Consider post-meal walks of 10-15 minutes '
-        f'to blunt postprandial glucose spikes. Monitor the slightly elevated weekend glucose '
-        f'pattern, which may reflect different eating habits.'
-    )
-
     return f'''<div class="section" id="blood-glucose">
-  <h2 class="section-title">Blood Glucose (CGM)</h2>
+  <h2 class="section-title">{t("glucose_cgm")}</h2>
   <div class="card-grid-2">
     <div class="card"><div class="card-header">Time in Range</div>{tir_donut}{tir_bar}</div>
     <div class="card">{circadian_chart if circadian_chart else "<p>No 24h glucose data</p>"}</div>
@@ -2182,7 +1951,7 @@ def section_glucose(base, adv):
     </div>
     <div class="metric-card">
       <div class="metric-label">CV%</div>
-      <div class="metric-value">{fmt(cv)}% <span class="metric-unit">{_s(glucose.get("cv_stability",""))}</span></div>
+      <div class="metric-value">{fmt(glucose.get("cv_pct"))}% <span class="metric-unit">{_s(glucose.get("cv_stability",""))}</span></div>
     </div>
     <div class="metric-card">
       <div class="metric-label"><abbr title="Mean Amplitude of Glycemic Excursions">MAGE</abbr></div>
@@ -2219,8 +1988,7 @@ def section_glucose(base, adv):
   {"<div class='card'><div class='card-header'>Weekly Glucose Pattern</div>" + weekly_html + "</div>" if weekly_html else ""}
   {"<div class='card'><div class='card-header'>Daily Summaries (Last 10 Days)</div>" + daily_html + "</div>" if daily_html else ""}
   {"<div class='card'>" + wo_html + "</div>" if wo_html else ""}
-  <div class="interpretation">{interp}</div>
-  <div class="recommendation">{rec}</div>
+  <div class="ai-narrative" id="narrative-glucose"></div>
 </div>'''
 
 
@@ -2260,54 +2028,27 @@ def section_activity(base, adv):
     if workouts.get("individual"):
         type_stats = {}
         for w in workouts["individual"]:
-            t = w.get("type", "Unknown")
-            if t not in type_stats:
-                type_stats[t] = {"count": 0, "total_dur": 0}
-            type_stats[t]["count"] += 1
-            type_stats[t]["total_dur"] += w.get("duration_min", 0)
-        wo_items = [(t, s["count"], COLORS["chart_3"]) for t, s in sorted(type_stats.items(), key=lambda x: -x[1]["count"])]
+            wtype = w.get("type", "Unknown")
+            if wtype not in type_stats:
+                type_stats[wtype] = {"count": 0, "total_dur": 0}
+            type_stats[wtype]["count"] += 1
+            type_stats[wtype]["total_dur"] += w.get("duration_min", 0)
+        wo_items = [(wt, s["count"], COLORS["chart_3"]) for wt, s in sorted(type_stats.items(), key=lambda x: -x[1]["count"])]
         if wo_items:
             wo_chart = svg_horizontal_bar(wo_items[:8], width=450, bar_height=26)
 
-    # Interpretation
     mean_steps = stats.get("mean", 0)
     over_10k = steps.get("days_over_10k_pct", 0)
     under_5k = steps.get("days_under_5k", 0)
     total_days = stats.get("count", 1)
-    under_5k_pct = under_5k / total_days * 100 if total_days else 0
 
     # Exercise minutes
     ex_min = safe_get(act_sum, "exercise_min", "mean", default=0)
     stand_h = safe_get(act_sum, "stand_hours", "mean", default=0)
-
-    interp = (
-        f'Your all-time average is <strong>{fmt(mean_steps, 0)} steps/day</strong> '
-        f'(median: {fmt(stats.get("median"), 0)}). {fmt(over_10k)}% of days exceed 10,000 steps, '
-        f'while {fmt(under_5k_pct)}% fall below 5,000 (classified as sedentary). '
-        f'Average daily exercise minutes: {fmt(ex_min)} min (WHO recommends 150 min/week moderate intensity). '
-        f'Average standing hours: {fmt(stand_h)} hours/day. '
-    )
-    if mk:
-        mk_trend = mk.get("trend", "no_trend").replace("_", " ")
-        interp += (
-            f'Mann-Kendall trend analysis shows <strong>{mk_trend}</strong> '
-            f'(tau={fmt(mk.get("tau"), 3)}, p={fmt(mk.get("p_value"), 3)}). '
-        )
     wo_total = workouts.get("total", 0)
-    if wo_total:
-        interp += f'Total recorded workouts: {wo_total} over the tracking period. '
-
-    rec = (
-        f'Your step count has been declining recently. Set progressive daily targets: '
-        f'start with 6,000 steps/day and increase by 500 steps each week. '
-        f'Schedule structured workouts at least 3x/week. '
-        f'Your most active day is {max(weekly.items(), key=lambda x: x[1].get("mean", 0))[0] if weekly else "N/A"} '
-        f'-- try to replicate that activity pattern on other days. '
-        f'Consider a standing desk to improve standing hours, and set hourly movement reminders.'
-    )
 
     return f'''<div class="section" id="activity-exercise">
-  <h2 class="section-title">Activity &amp; Exercise</h2>
+  <h2 class="section-title">{t("activity")}</h2>
   {"<div class='card'>" + steps_chart + "</div>" if steps_chart else ""}
   <div class="card-grid-2">
     {"<div class='card'><div class='card-header'>Weekly Step Pattern (Mon\u2013Sun)</div>" + weekly_chart + "</div>" if weekly_chart else ""}
@@ -2342,8 +2083,7 @@ def section_activity(base, adv):
       <div class="metric-note">{fmt(wo_total / max(total_days / 30, 1), 1)}/month avg</div>
     </div>
   </div>
-  <div class="interpretation">{interp}</div>
-  <div class="recommendation">{rec}</div>
+  <div class="ai-narrative" id="narrative-activity"></div>
 </div>'''
 
 
@@ -2391,32 +2131,11 @@ def section_sleep(base):
         recent_chart = svg_line_chart(r_vals, width=650, height=180, color=COLORS["chart_4"],
                                       x_labels=r_labels, title="Recent Nightly Duration (hours)", fill=True)
 
-    # Interpretation
     mean_dur = dur.get("mean", 0)
     mean_eff = eff.get("mean", 0)
-    interp = (
-        f'Average sleep duration is <strong>{fmt(mean_dur)} hours</strong> '
-        f'(median: {fmt(dur.get("median"))} hours). While this appears long, '
-        f'note the average efficiency of <strong>{fmt(mean_eff)}%</strong> '
-        f'(optimal: >85%), indicating significant time awake in bed. '
-        f'Effective sleep time is approximately {fmt(mean_dur * mean_eff / 100)} hours. '
-        f'Sleep architecture shows {fmt(deep_h)} hours deep sleep ({fmt(deep_h / mean_dur * 100 if mean_dur else 0)}%), '
-        f'{fmt(rem_h)} hours REM ({fmt(rem_h / mean_dur * 100 if mean_dur else 0)}%), '
-        f'and {fmt(core_h)} hours core/light sleep ({fmt(core_h / mean_dur * 100 if mean_dur else 0)}%). '
-        f'Target deep sleep: 15-20% of total sleep time; REM: 20-25%.'
-    )
-
-    rec = (
-        f'Your sleep efficiency suggests spending too much time in bed without sleeping. '
-        f'Try sleep restriction: limit time in bed to {fmt(mean_dur * mean_eff / 100 + 0.5)} hours initially, '
-        f'then gradually extend as efficiency improves above 85%. '
-        f'Maintain a consistent wake time (even on weekends). '
-        f'Note: Apple Watch sleep tracking can overestimate total time due to detecting periods of stillness as sleep. '
-        f'Consider evaluating with a formal sleep study if fatigue persists.'
-    )
 
     return f'''<div class="section" id="sleep">
-  <h2 class="section-title">Sleep Analysis</h2>
+  <h2 class="section-title">{t("sleep")}</h2>
   <div class="card-grid-2">
     <div class="card"><div class="card-header">Sleep Architecture (Average Night)</div>{arch_donut}</div>
     <div class="card">{dur_chart if dur_chart else "<p>No monthly sleep data</p>"}</div>
@@ -2445,8 +2164,7 @@ def section_sleep(base):
       <div class="metric-value">{sleep.get("total_nights", 0)}</div>
     </div>
   </div>
-  <div class="interpretation">{interp}</div>
-  <div class="recommendation">{rec}</div>
+  <div class="ai-narrative" id="narrative-sleep"></div>
 </div>'''
 
 
@@ -2467,37 +2185,6 @@ def section_circadian(base, adv):
     if hr_24h:
         hr_curve = svg_circadian_curve(hr_24h, width=650, height=220,
                                         color=COLORS["chart_1"], label="24-Hour Heart Rate Profile (bpm)")
-
-    interp = ""
-    if hr_cosinor:
-        interp = (
-            f'Cosinor analysis reveals a significant 24-hour heart rate rhythm '
-            f'(p<0.001, R\u00b2={fmt(hr_cosinor.get("r_squared"), 2)}). '
-            f'MESOR (mean level) is <strong>{fmt(hr_cosinor.get("mesor"))} bpm</strong>, '
-            f'amplitude (peak-to-trough/2) is <strong>{fmt(hr_cosinor.get("amplitude"))} bpm</strong>, '
-            f'and acrophase (peak time) is at <strong>{_s(hr_cosinor.get("acrophase_time"))}</strong>. '
-        )
-    if gl_cosinor:
-        interp += (
-            f'Glucose rhythm peaks at {_s(gl_cosinor.get("acrophase_time"))} with amplitude '
-            f'{fmt(gl_cosinor.get("amplitude"))} mg/dL (R\u00b2={fmt(gl_cosinor.get("r_squared"), 2)}). '
-        )
-    if stability:
-        is_val = stability.get("interdaily_stability")
-        iv_val = stability.get("intradaily_variability")
-        is_interp = stability.get("IS_interpretation", "")
-        iv_interp = stability.get("IV_interpretation", "")
-        interp += (
-            f'Interdaily Stability (IS) = {fmt(is_val, 3)} ({is_interp}): measures day-to-day consistency of rhythm. '
-            f'Intradaily Variability (IV) = {fmt(iv_val, 3)} ({iv_interp}): measures fragmentation within a day. '
-            f'Healthy rhythms show high IS (>0.5) and low IV (<0.5).'
-        )
-
-    rec = (
-        f'Your circadian rhythm is reasonably stable. To optimize: maintain consistent sleep/wake times '
-        f'(within 30 minutes, even on weekends), get bright light exposure within 30 minutes of waking, '
-        f'and avoid bright screens 1 hour before bed. Your HR acrophase is in the late afternoon, which is normal.'
-    )
 
     return f'''<div class="section" id="circadian-rhythm">
   <h2 class="section-title">Circadian Rhythm Quantification</h2>
@@ -2526,8 +2213,7 @@ def section_circadian(base, adv):
       <div class="metric-note">Amplitude: {fmt(gl_cosinor.get("amplitude"))} mg/dL</div>
     </div>
   </div>
-  <div class="interpretation">{interp}</div>
-  <div class="recommendation">{rec}</div>
+  <div class="ai-narrative" id="narrative-circadian"></div>
 </div>'''
 
 
@@ -2598,25 +2284,6 @@ def section_causal_inference(base, adv):
             lag_html = '<div class="section-subtitle">Lagged Correlations</div><ul style="font-size:13px;color:' + COLORS["text_secondary"] + ';line-height:2">'
             lag_html += "".join(f"<li>{_s(item)}</li>" for item in lag_items) + "</ul>"
 
-    interp = (
-        f'Three complementary methods were used to assess causal relationships between health metrics. '
-        f'<strong>Granger causality</strong> tests whether past values of one variable predict another '
-        f'(linear, parametric). '
-        f'<strong>Transfer entropy</strong> quantifies information flow between time series (non-parametric). '
-        f'<strong>Convergent Cross Mapping</strong> tests for causal coupling in potentially nonlinear systems. '
-        f'Agreement across multiple methods provides stronger evidence than any single test.'
-    )
-
-    # Summarize findings
-    g_steps_hr = ci.get("granger_steps_causes_hr", {}).get("lag_1", {})
-    te_steps_hr = ci.get("transfer_entropy_steps_to_hr", {})
-    if g_steps_hr.get("significant") and te_steps_hr.get("significant"):
-        interp += (
-            f' The strongest finding is that <strong>steps Granger-cause heart rate</strong> '
-            f'(confirmed by both Granger and Transfer Entropy), meaning your activity level has a '
-            f'measurable, predictive influence on your heart rate dynamics.'
-        )
-
     return f'''<div class="section" id="causal-inference">
   <h2 class="section-title">Causal Inference</h2>
   <div class="card">
@@ -2627,7 +2294,7 @@ def section_causal_inference(base, adv):
     </table>
   </div>
   {lag_html}
-  <div class="interpretation">{interp}</div>
+  <div class="ai-narrative" id="narrative-causal-inference"></div>
 </div>'''
 
 
@@ -2665,25 +2332,6 @@ def section_nonlinear_dynamics(base, adv):
 <div style="text-align:center;margin-top:6px;font-size:13px;font-weight:600;color:{COLORS["primary"]}">\u03b1 = {fmt(alpha, 4)}</div>
 </div>'''
 
-    interp = (
-        f'<strong>Sample Entropy</strong> measures the irregularity/complexity of a time series. '
-        f'HR Sample Entropy = {fmt(hr_se.get("value"), 3)} ({_s(hr_se.get("interpretation","").replace("_"," "))}) '
-        f'-- higher values indicate more complex, healthy dynamics. '
-        f'Glucose Sample Entropy = {fmt(gl_se.get("value"), 3)} ({_s(gl_se.get("interpretation","").replace("_"," "))}) '
-        f'-- lower values suggest more regular, predictable glucose patterns. '
-    )
-    if hr_dfa:
-        interp += (
-            f'<strong>DFA \u03b1</strong> = {fmt(hr_dfa.get("alpha"), 4)} (R\u00b2={fmt(hr_dfa.get("r_squared"), 3)}): '
-            f'values near 1.0 indicate fractal-like correlations typical of healthy hearts; '
-            f'your value suggests {_s(hr_dfa.get("interpretation","").replace("_"," "))} dynamics. '
-        )
-    if mse:
-        interp += (
-            f'<strong>Multiscale Entropy</strong> profile shows how complexity varies across time scales. '
-            f'A healthy MSE profile maintains high entropy across scales.'
-        )
-
     return f'''<div class="section" id="nonlinear-dynamics">
   <h2 class="section-title">Nonlinear Dynamics</h2>
   <div class="card-grid" style="margin-bottom:16px">
@@ -2705,7 +2353,7 @@ def section_nonlinear_dynamics(base, adv):
   </div>
   {"<div class='card'><div class='card-header'>DFA Alpha Scale</div>" + dfa_scale + "</div>" if dfa_scale else ""}
   {"<div class='card'><div class='card-header'>Multiscale Entropy Profile</div>" + mse_chart + "</div>" if mse_chart else ""}
-  <div class="interpretation">{interp}</div>
+  <div class="ai-narrative" id="narrative-nonlinear"></div>
 </div>'''
 
 
@@ -2761,24 +2409,6 @@ def section_biological_age(base, adv):
   <div style="margin-top:8px;font-size:12px;color:{COLORS["text_muted"]}">Green = within normal limits, Red = flagged</div>
 </div>'''
 
-    interp = (
-        f'Your estimated <strong>biological age is {fmt(bio_age)} years</strong> compared to a '
-        f'chronological age of {fmt(chrono)} years, reflecting <strong>{fmt(bio.get("age_acceleration"), 1)} years '
-        f'of accelerated aging</strong>. Your <strong>fitness age is {fmt(fit_age)} years</strong>, '
-        f'which is {fmt(fitness.get("age_gap"), 1)} years older than chronological age. '
-        f'The largest contributors to age acceleration are VO2 Max (+{fmt(components.get("vo2max_delta"))} years) '
-        f'and BMI (+{fmt(components.get("bmi_delta"))} years). '
-        f'These are modifiable through exercise and weight management.'
-    )
-
-    rec = (
-        f'The gap between biological and chronological age is reversible. '
-        f'Prioritize improving VO2 Max (the largest contributor) through progressive aerobic training: '
-        f'start with 3x/week 30-minute sessions at moderate intensity and add one interval session. '
-        f'Simultaneously work on weight management to reduce BMI contribution. '
-        f'Expect to see biological age improvement within 3-6 months of consistent effort.'
-    )
-
     return f'''<div class="section" id="biological-age">
   <h2 class="section-title">Biological &amp; Fitness Age</h2>
   <div class="card" style="margin-bottom:16px">
@@ -2809,8 +2439,7 @@ def section_biological_age(base, adv):
     </div>
     {allo_html}
   </div>
-  <div class="interpretation">{interp}</div>
-  <div class="recommendation">{rec}</div>
+  <div class="ai-narrative" id="narrative-biological-age"></div>
 </div>'''
 
 
@@ -2866,6 +2495,7 @@ def section_correlation_matrix(base):
     <div class="card-header">Top 3 Significant Correlations</div>
     {top3_html}
   </div>
+  <div class="ai-narrative" id="narrative-correlations"></div>
 </div>'''
 
 
@@ -3049,6 +2679,7 @@ def generate_navigation():
         ("trend-momentum", "Trend Momentum"),
         ("data-quality", "Data Quality"),
         ("methodology", "Methodology"),
+        ("overall-recommendations", "Recommendations"),
     ]
     links = "".join(f'<a href="#{sid}">{_s(label)}</a>' for sid, label in sections)
     return f'''<nav class="nav-sidebar">
@@ -3140,6 +2771,12 @@ def generate_html(base, adv, lang="en"):
     s = section_methodology(adv)
     if s:
         sections.append(s)
+
+    # Recommendations section (AI-filled narrative)
+    sections.append(f'''<div class="section" id="overall-recommendations">
+  <h2 class="section-title">{t("recommendations")}</h2>
+  <div class="ai-narrative" id="narrative-recommendations"></div>
+</div>''')
 
     sections.append(section_footer())
 

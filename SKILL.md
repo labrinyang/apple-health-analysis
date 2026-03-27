@@ -43,31 +43,18 @@ python3 <skill-path>/scripts/advanced_analytics.py <xml-path> 2>/dev/null > /tmp
 
 Both scripts: streaming XML parsing (handles 1GB+), Python 3.6+ only, no external deps. If >500MB, warn about 2-3 min runtime.
 
-### Step 3: Generate HTML Report
+### Step 3: Generate HTML Report Shell
 
-Generate a visual HTML report with Claude's design system — interactive gauges, circadian charts, risk flags, and more:
+Generate the visual HTML report with charts, gauges, and data tables:
 
 ```bash
-python3 <skill-path>/scripts/generate_report_html.py /tmp/health_base.json /tmp/health_advanced.json -o /tmp/health_report.html
-open /tmp/health_report.html  # macOS
-# xdg-open /tmp/health_report.html  # Linux
+python3 <skill-path>/scripts/generate_report_html.py /tmp/health_base.json /tmp/health_advanced.json -o /tmp/health_report.html --lang zh
 ```
 
-This produces a self-contained HTML file (~40KB) with:
-- Circular gauge charts for composite health scores
-- SVG circadian rhythm curves (24h HR and glucose)
-- Stacked TIR bar (time-in-range visualization)
-- Weight trajectory sparkline with gain decomposition
-- HR zone distribution bars
-- Causal inference verdict table
-- Biological/Fitness age comparison
-- Trend momentum dashboard
-- Data quality transparency table
-- All in Claude's warm terracotta color scheme
+This produces a self-contained HTML (~160KB) with all visualizations but EMPTY narrative sections.
+The narrative sections are `<div class="ai-narrative" id="narrative-XXX">` elements waiting for your analysis.
 
-After opening the HTML in the browser, also present a text-based analysis in the conversation following the report template (Step 5) — the HTML is a visual companion, not a replacement for the interpretive narrative.
-
-### Step 4: Assess Data Quality
+### Step 4: Assess Data Quality & Read Clinical Reference
 
 Before interpreting ANY results, read the `data_quality` section from the base analysis output. This tells you which analyses are reliable and which should be presented with caveats or skipped entirely.
 
@@ -79,13 +66,51 @@ Before interpreting ANY results, read the `data_quality` section from the base a
 
 From the advanced analysis, check `data_requirements` — it explicitly states which methods had enough data to run and which were skipped.
 
-### Step 4: Read Clinical Reference
-
 Read `references/clinical_interpretation.md` for evidence-based reference ranges and interpretation guidelines. This file contains paper-cited norms for every metric including advanced nonlinear dynamics and glucose risk indices. Every number in the report should be contextualized against these ranges.
 
-### Step 5: Generate the Report
+### Step 5: Fill Narrative Sections
 
-Read `references/report_template.md` for the exact output format. Follow it precisely. The template defines the structure, tone, evidence grading system, and formatting rules for a clinical-quality report.
+Read both JSON outputs. For each section in the HTML, use the Edit tool to insert your clinical interpretation directly into the corresponding `<div class="ai-narrative">` element.
+
+The narrative IDs and what to write:
+
+| ID | Content to Write |
+|----|-----------------|
+| narrative-executive-summary | 3-5 bullet points of most critical findings with evidence grades |
+| narrative-body-composition | Weight trajectory interpretation, BMI context, gain decomposition analysis, projection implications |
+| narrative-cardiovascular | RHR assessment vs age norms, HR zone analysis, VO2 Max percentile, recovery assessment |
+| narrative-autonomic | HRV interpretation, Poincaré balance, DFA alpha meaning, nocturnal HR trend |
+| narrative-glucose | CGM interpretation, TIR context, variability assessment, Kovatchev risk, meal pattern insights |
+| narrative-activity | Step trend assessment, exercise consistency, weekly pattern insights |
+| narrative-sleep | Duration adequacy, architecture quality, efficiency assessment |
+| narrative-circadian | Cosinor interpretation, rhythm stability assessment |
+| narrative-causal-inference | Explain which causal relationships are confirmed and what they mean practically |
+| narrative-nonlinear | Complexity assessment, fractal dynamics, what it means for adaptability |
+| narrative-biological-age | Fitness age context, biological age drivers, allostatic load interpretation |
+| narrative-disease-screening | Summarize elevated risks, explain what screenings mean, suggest follow-up |
+| narrative-correlations | Highlight top 3 correlations with physiological explanations |
+| narrative-recommendations | Numbered, prioritized, specific, data-grounded action items |
+
+Each narrative should:
+- Be written as HTML (use `<p>`, `<ul>`, `<li>`, `<strong>`, `<h4>` tags)
+- Reference specific numbers from the data
+- Cite clinical reference ranges from `references/clinical_interpretation.md`
+- Include evidence grades where applicable
+- Be in the user's language
+- Be direct and clinically informative, not generic
+
+Example Edit for body composition:
+```
+old_string: <div class="ai-narrative" id="narrative-body-composition"></div>
+new_string: <div class="ai-narrative" id="narrative-body-composition"><h4>Clinical Assessment</h4><p>Your current weight of <strong>105.0 kg</strong> (BMI 30.5) places you in <strong>Obese Class I</strong>...</p></div>
+```
+
+### Step 6: Open Final Report
+
+After all narrative sections are filled:
+```bash
+open /tmp/health_report.html  # macOS
+```
 
 ## Key Principles
 
