@@ -734,6 +734,14 @@ def generate_css():
     }}
     /* SVG responsive */
     svg {{ max-width: 100%; height: auto; }}
+    /* Constrain wide charts (line, circadian, bar) to prevent giant renders */
+    .chart-wrap {{
+        max-width: 640px;
+    }}
+    .chart-wrap svg {{
+        width: 100%;
+        height: auto;
+    }}
     /* Print */
     @media print {{
         .nav-sidebar {{ display: none; }}
@@ -962,7 +970,7 @@ def svg_line_chart(data_points, width=600, height=200, color=None, fill=True,
     if title:
         title_svg = f'<text x="{padding_left}" y="16" font-size="12" font-weight="600" fill="{COLORS["text_secondary"]}">{_s(title)}</text>'
 
-    return f'''<svg viewBox="0 0 {width} {height}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
+    return f'''<div class="chart-wrap"><svg viewBox="0 0 {width} {height}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
   {title_svg}
   {y_labels_svg}
   {x_labels_svg}
@@ -976,7 +984,7 @@ def svg_line_chart(data_points, width=600, height=200, color=None, fill=True,
       for i in range(0, len(data_points), max(1, len(data_points) // 20))
       if data_points[i] is not None and i < len(points)
   ) if x_labels and len(points) > 5 else ""}
-</svg>'''
+</svg></div>'''
 
 
 def svg_donut_chart(segments, size=200, inner_ratio=0.6, title=""):
@@ -1061,9 +1069,9 @@ def svg_horizontal_bar(items, width=500, bar_height=28, max_val=None, show_value
         if show_values:
             bars += f'<text x="{padding_left + bw + 6:.1f}" y="{y + bar_height / 2 + 4:.1f}" font-size="11" fill="{COLORS["text_muted"]}">{fmt(value)}</text>'
 
-    return f'''<svg viewBox="0 0 {width} {total_h}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
+    return f'''<div class="chart-wrap"><svg viewBox="0 0 {width} {total_h}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
   {bars}
-</svg>'''
+</svg></div>'''
 
 
 def svg_stacked_bar(segments, width=400, height=36, labels=True):
@@ -1163,9 +1171,9 @@ def svg_heatmap(matrix, row_labels, col_labels, width=500, cell_size=52, title="
         x = label_w + c * cell_size + cell_size / 2
         cells += f'<text x="{x}" y="{label_h - 8}" text-anchor="middle" font-size="11" fill="{COLORS["text_secondary"]}" transform="rotate(-35 {x} {label_h - 8})">{_s(col_labels[c])}</text>'
 
-    return f'''<svg viewBox="0 0 {total_w} {total_h}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
+    return f'''<div class="chart-wrap" style="max-width:{total_w}px"><svg viewBox="0 0 {total_w} {total_h}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
   {cells}
-</svg>'''
+</svg></div>'''
 
 
 def svg_circadian_curve(hourly_data, width=600, height=220, color=None, label="", y_unit=""):
@@ -1243,7 +1251,7 @@ def svg_circadian_curve(hourly_data, width=600, height=220, color=None, label=""
     # Label
     lbl = f'<text x="{padding_left}" y="16" font-size="12" font-weight="600" fill="{COLORS["text_secondary"]}">{_s(label)}</text>' if label else ""
 
-    return f'''<svg viewBox="0 0 {width} {height}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
+    return f'''<div class="chart-wrap"><svg viewBox="0 0 {width} {height}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
   {lbl}
   {night}
   {y_labels}
@@ -1255,7 +1263,7 @@ def svg_circadian_curve(hourly_data, width=600, height=220, color=None, label=""
       for h in hours
   )}
   <text x="{padding_left + chart_w}" y="{padding_top + chart_h + 18}" text-anchor="end" font-size="9" fill="{COLORS["text_muted"]}">shaded = night</text>
-</svg>'''
+</svg></div>'''
 
 
 def svg_poincare(sd1, sd2, cx_val=0, cy_val=0, size=200):
@@ -1330,12 +1338,12 @@ def svg_bar_chart_vertical(data_points, x_labels, width=600, height=200, color=N
 
     title_svg = f'<text x="{padding_left}" y="16" font-size="12" font-weight="600" fill="{COLORS["text_secondary"]}">{_s(title)}</text>' if title else ""
 
-    return f'''<svg viewBox="0 0 {width} {height}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
+    return f'''<div class="chart-wrap"><svg viewBox="0 0 {width} {height}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
   {title_svg}
   {y_labels_svg}
   {x_labels_svg}
   {bars}
-</svg>'''
+</svg></div>'''
 
 
 def svg_multiscale_entropy(mse_data, width=400, height=180):
