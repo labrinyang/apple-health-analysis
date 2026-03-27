@@ -1,0 +1,64 @@
+{
+  "expectations": [
+    {
+      "text": "Runs both analysis scripts",
+      "passed": true,
+      "evidence": "Report contains both basic metrics and advanced analytics including Sample Entropy, DFA, Poincare, Granger causality, Transfer Entropy, CCM, Cosinor, LBGI/HBGI, CONGA, GVP, Biological Age, Allostatic Load, Mann-Kendall trend tests, Bayesian changepoints. Header states '20 statistical methods from 20 peer-reviewed publications'."
+    },
+    {
+      "text": "Shows 30d vs 90d vs 180d trend comparison table",
+      "passed": true,
+      "evidence": "Multiple metrics have explicit trend momentum comparisons: Steps section shows 'All-time 8,889 -> Last 180d 7,897 -> Last 90d 6,953 -> Last 30d 4,142 steps/day'. RHR section shows recent vs prior 90d comparisons. Health Dashboard notes 'last 90d' metrics with trend arrows."
+    },
+    {
+      "text": "Presents change-point detection results (CUSUM or Bayesian)",
+      "passed": true,
+      "evidence": "Bayesian changepoint detection explicitly reported: 'Bayesian Change Point Detection: no high-posterior change points detected in the RHR series (max posterior = 0.033)'. For steps: 'Bayesian changepoint: max posterior 0.05' and 'CUSUM-based method detected a change point on Feb 24, 2026 (8,166 -> 3,989 steps/day)'. Also for weight: 'Bayesian changepoint: max posterior 0.05'."
+    },
+    {
+      "text": "Reports Mann-Kendall trend test results with p-values",
+      "passed": true,
+      "evidence": "Multiple Mann-Kendall results: Weight 'tau=0.807, z=5.642, p<0.001' (n=25), RHR 'tau=-0.059, z=-1.359, p=0.137' (n=240), Weekly steps 'tau=-0.033, z=-0.484, p=0.555' (n=99), Weekly HRV 'tau=0.060, z=0.510, p=0.536' (n=37)."
+    },
+    {
+      "text": "Directly addresses the user's concern about fitness decline with data",
+      "passed": true,
+      "evidence": "Executive summary directly states: 'Daily step count has dropped sharply in the most recent quarter -- last 30 days average 4,142 steps/day vs. all-time average 8,889 steps/day, a 53% decline that corroborates your perception of declining fitness'. Also: VO2 Max at 5th percentile, RHR rising from 69 to 84 bpm."
+    },
+    {
+      "text": "Shows weight trajectory with regression projection",
+      "passed": true,
+      "evidence": "Body Composition section has weight trajectory table, linear regression (+0.82 kg/month, R^2=0.87), and explicit projections table: +3 months 112.0 kg BMI 32.6, +6 months 114.4 kg BMI 33.3, +12 months 119.3 kg BMI 34.7 (Obese Class II)."
+    },
+    {
+      "text": "Assesses VO2 Max relative to age norms",
+      "passed": true,
+      "evidence": "VO2 Max 31.2 mL/min/kg explicitly assessed as '<5th percentile for 20-29 year-old males (ACSM: <37 = 5th percentile)'. Fitness Age 64.4 years vs chronological 23.8. Monthly trend table provided."
+    },
+    {
+      "text": "Shows RHR monthly trend",
+      "passed": true,
+      "evidence": "Resting HR Monthly Trend table shows 12 months from 2025-04 to 2026-03 with Mean RHR and n values. Includes Mann-Kendall analysis and clinical context noting the Jan-to-Mar 2026 surge."
+    },
+    {
+      "text": "Contains composite health score",
+      "passed": true,
+      "evidence": "Section 1 'Health Dashboard' contains a table with 8 dimensions, numeric scores, letter grades (A, C, D+, F, D, F, D, F), and overall score 47 / D+."
+    },
+    {
+      "text": "Findings carry evidence grades",
+      "passed": true,
+      "evidence": "Multiple findings carry explicit evidence grades: Weight gain 'Evidence grade: A', VO2 Max 'Evidence grade: A', Activity decline 'Evidence grade: B', RHR 'Evidence grade: B', Glycemic Control 'Evidence grade: A', Heart Complexity 'Evidence grade: B', Audio 'Evidence grade: A'."
+    },
+    {
+      "text": "Provides specific, trend-aware recommendations",
+      "passed": true,
+      "evidence": "6 numbered recommendations referencing specific trends: weight gain trajectory +0.82 kg/month, step count collapse 4,142 vs 8,889, RHR surge 69->84 bpm, VO2 Max decline. Each cites data sources (R^2, Granger F values, lagged correlations, Cohen's d)."
+    },
+    {
+      "text": "Handles all data gracefully",
+      "passed": true,
+      "evidence": "Report covers all data types across all sections without errors. Notes 'All 20 methods ran successfully' and appropriately handles sparse data (e.g., weight 3% coverage, VO2 Max 7% coverage) with reliability warnings."
+    }
+  ]
+}

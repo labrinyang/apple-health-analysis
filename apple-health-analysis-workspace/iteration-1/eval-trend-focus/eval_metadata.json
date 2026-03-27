@@ -1,0 +1,19 @@
+{
+  "eval_id": 3,
+  "eval_name": "trend-focus",
+  "prompt": "I've been wearing my Apple Watch for about a year. I feel like my fitness has been declining but I'm not sure. Can you look at my health export data and tell me if there are any concerning trends?",
+  "assertions": [
+    {"name": "runs_both_scripts", "description": "Runs both analysis scripts"},
+    {"name": "has_trend_momentum", "description": "Shows 30d vs 90d vs 180d trend comparison table"},
+    {"name": "has_change_points", "description": "Presents change-point detection results (CUSUM or Bayesian)"},
+    {"name": "has_mann_kendall", "description": "Reports Mann-Kendall trend test results with p-values"},
+    {"name": "addresses_fitness_decline", "description": "Directly addresses the user's concern about fitness decline with data"},
+    {"name": "has_weight_projection", "description": "Shows weight trajectory with regression projection"},
+    {"name": "has_vo2max_assessment", "description": "Assesses VO2 Max relative to age norms"},
+    {"name": "has_rhr_trend", "description": "Shows RHR monthly trend"},
+    {"name": "has_health_dashboard", "description": "Contains composite health score"},
+    {"name": "has_evidence_grades", "description": "Findings carry evidence grades"},
+    {"name": "has_recommendations", "description": "Provides specific, trend-aware recommendations"},
+    {"name": "no_missing_data_crash", "description": "Handles all data gracefully"}
+  ]
+}

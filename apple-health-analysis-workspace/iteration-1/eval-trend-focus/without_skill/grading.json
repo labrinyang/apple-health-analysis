@@ -1,0 +1,64 @@
+{
+  "expectations": [
+    {
+      "text": "Runs both analysis scripts",
+      "passed": false,
+      "evidence": "Report contains only basic descriptive statistics (monthly averages, counts, percentage trends). No advanced analytics: no Sample Entropy, DFA, Poincare, Granger causality, Transfer Entropy, CCM, Cosinor, Kovatchev indices, Biological Age, etc. Only analyze_health.py was run."
+    },
+    {
+      "text": "Shows 30d vs 90d vs 180d trend comparison table",
+      "passed": false,
+      "evidence": "No explicit multi-window trend comparison (30d vs 90d vs 180d). The report shows monthly data tables and first-to-last percentage changes (e.g., '12,270 --> 4,217 (-65.6%)') but does not present a structured 30d/90d/180d momentum comparison."
+    },
+    {
+      "text": "Presents change-point detection results (CUSUM or Bayesian)",
+      "passed": false,
+      "evidence": "No change-point detection of any kind. No CUSUM, Bayesian changepoint, or any statistical change detection method. Trends are described narratively without formal changepoint analysis."
+    },
+    {
+      "text": "Reports Mann-Kendall trend test results with p-values",
+      "passed": false,
+      "evidence": "No Mann-Kendall tests or any statistical trend tests with p-values. Trends are reported as simple percentage changes (e.g., '-3.5%', '+17.9%', '-65.6%') without formal statistical testing."
+    },
+    {
+      "text": "Directly addresses the user's concern about fitness decline with data",
+      "passed": true,
+      "evidence": "Executive summary explicitly states: 'Your intuition appears to be correct -- the data shows significant evidence of declining fitness.' Lists 13 concerning trends and directly correlates them to the user's concern about fitness decline."
+    },
+    {
+      "text": "Shows weight trajectory with regression projection",
+      "passed": false,
+      "evidence": "Weight data is shown as monthly averages with a percentage trend ('89.1 --> 105.0 (+17.9%)'), but no regression analysis or future projections are provided."
+    },
+    {
+      "text": "Assesses VO2 Max relative to age norms",
+      "passed": true,
+      "evidence": "Report states: 'A VO2 Max of 30.1 mL/min/kg for a 24-year-old male is classified as Below Average to Poor by the American Heart Association. For males aged 20-29, the Good range starts around 39-43 mL/min/kg.'"
+    },
+    {
+      "text": "Shows RHR monthly trend",
+      "passed": true,
+      "evidence": "Section 2 'Resting Heart Rate' contains a monthly table from 2025-01 to 2026-03 with average RHR values and measurement counts, showing the trend from 81.5 to 84.0 bpm."
+    },
+    {
+      "text": "Contains composite health score",
+      "passed": false,
+      "evidence": "No composite health score or scoring system. The report has an 'Overall Assessment' narrative but no numeric scores or letter grades for health dimensions."
+    },
+    {
+      "text": "Findings carry evidence grades",
+      "passed": false,
+      "evidence": "No evidence grades (A/B/C/D) appear anywhere in the report. Findings are described narratively without graded evidence quality levels."
+    },
+    {
+      "text": "Provides specific, trend-aware recommendations",
+      "passed": true,
+      "evidence": "Executive summary 'Key Recommendations' section provides 6 specific, trend-aware recommendations: improve cardiovascular fitness (citing VO2 Max decline and low cardio fitness alerts), lower RHR (current 84 bpm), increase steps (targeting 7,000-8,000), improve sleep (current 6.0h), establish workout routine."
+    },
+    {
+      "text": "Handles all data gracefully",
+      "passed": true,
+      "evidence": "Report covers VO2 Max, RHR, HRV, walking HR, daily steps, activity rings, workouts, body composition (weight, BMI, body fat, lean mass), sleep, respiratory, SpO2, walking metrics, blood glucose, and daylight exposure without errors."
+    }
+  ]
+}

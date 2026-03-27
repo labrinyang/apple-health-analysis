@@ -1,0 +1,39 @@
+{
+  "skill_name": "apple-health-analysis",
+  "iteration": 1,
+  "configurations": [
+    {
+      "name": "with_skill",
+      "results": [
+        {"eval_name": "general-english", "pass_rate": 1.0, "passed": 12, "total": 12, "tokens": 99422, "duration_seconds": 479.1},
+        {"eval_name": "glucose-chinese", "pass_rate": 1.0, "passed": 10, "total": 10, "tokens": 105055, "duration_seconds": 521.3},
+        {"eval_name": "trend-focus", "pass_rate": 1.0, "passed": 12, "total": 12, "tokens": 99140, "duration_seconds": 433.1}
+      ],
+      "aggregate": {
+        "mean_pass_rate": 1.0,
+        "stddev_pass_rate": 0.0,
+        "mean_tokens": 101206,
+        "mean_duration_seconds": 477.8
+      }
+    },
+    {
+      "name": "without_skill",
+      "results": [
+        {"eval_name": "general-english", "pass_rate": 0.25, "passed": 3, "total": 12, "tokens": 63866, "duration_seconds": 509.5},
+        {"eval_name": "glucose-chinese", "pass_rate": 0.40, "passed": 4, "total": 10, "tokens": 87718, "duration_seconds": 641.1},
+        {"eval_name": "trend-focus", "pass_rate": 0.42, "passed": 5, "total": 12, "tokens": 90322, "duration_seconds": 853.7}
+      ],
+      "aggregate": {
+        "mean_pass_rate": 0.353,
+        "stddev_pass_rate": 0.093,
+        "mean_tokens": 80635,
+        "mean_duration_seconds": 668.1
+      }
+    }
+  ],
+  "delta": {
+    "pass_rate": "+64.7%",
+    "tokens": "+25.5%",
+    "duration": "-28.5% (faster)"
+  }
+}

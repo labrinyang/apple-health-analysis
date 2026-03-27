@@ -1,0 +1,64 @@
+{
+  "expectations": [
+    {
+      "text": "Runs both analyze_health.py AND advanced_analytics.py",
+      "passed": true,
+      "evidence": "Report contains both basic metrics (from analyze_health.py) and advanced analytics results including Sample Entropy, DFA, Poincare, Granger causality, Transfer Entropy, CCM, Biological Age, Allostatic Load, Cosinor analysis, etc. (from advanced_analytics.py). The report header states '20 statistical methods from 20 peer-reviewed publications' were applied."
+    },
+    {
+      "text": "Report starts with an executive summary of 3-5 key findings",
+      "passed": true,
+      "evidence": "Report has an 'Executive Summary' section with exactly 5 bullet-pointed key findings covering weight gain, VO2 Max, activity decline, metabolic health, and resting heart rate."
+    },
+    {
+      "text": "Contains a composite health score table with letter grades",
+      "passed": true,
+      "evidence": "Section 1 'Health Dashboard' contains a table with 8 dimensions, each scored with numeric values and letter grades (A, C, C-, D+, D, D+, D, F) and an overall score of 47 / D+."
+    },
+    {
+      "text": "Contains a data availability/quality assessment section",
+      "passed": true,
+      "evidence": "Section 2 'Data Availability & Quality' contains a detailed table with Records, Coverage %, Span, Reliability ratings, and Notes for 17 data types including missing data types (Blood Pressure, ECG)."
+    },
+    {
+      "text": "Contains risk stratification with HIGH/MODERATE severity levels",
+      "passed": true,
+      "evidence": "Section 3 'Critical Findings & Risk Stratification' has explicit 'HIGH RISK' subsection (3 items: Sustained Weight Gain, Low VO2 Max, Activity Decline) and 'MODERATE RISK' subsection (2 items: RHR Rising, Low Exercise Frequency), plus 'POSITIVE FINDINGS'."
+    },
+    {
+      "text": "Findings include evidence grades (A/B/C/D)",
+      "passed": true,
+      "evidence": "Multiple findings carry explicit evidence grades: Weight gain 'Evidence grade: A', VO2 Max 'Evidence grade: A', Activity decline 'Evidence grade: B', RHR 'Evidence grade: B', Glycemic Control 'Evidence grade: A', Audio 'Evidence grade: A'. Executive summary also includes inline evidence grades."
+    },
+    {
+      "text": "Presents Granger causality or transfer entropy results",
+      "passed": true,
+      "evidence": "Dedicated 'Causal Inference Analysis' section presents Granger causality (Steps->HR F=18.83 p<0.001, Steps->RHR F=9.59 p=0.002, Steps->Glucose F=4.19 p=0.021 at lag 2), Transfer Entropy (0.181 bits p=0.013), and CCM convergence results in a structured table with verdicts."
+    },
+    {
+      "text": "Presents fitness age or biological age estimate",
+      "passed": true,
+      "evidence": "Dedicated 'Biological Age Assessment' section presents Fitness Age 64.4 yr (gap +40.6 yr), Biological Age 35.3 yr (gap +11.5 yr), and Allostatic Load 2/7, with component breakdown table."
+    },
+    {
+      "text": "Ends with specific, data-grounded recommendations",
+      "passed": true,
+      "evidence": "Report ends with 'Personalized Recommendations' section containing 6 numbered recommendations, each citing specific data (e.g., '+0.82 kg/month', 'R^2=0.87', 'Granger F=9.59 p=0.002', 'lag-2-week r=-0.298') with priority levels and expected outcomes."
+    },
+    {
+      "text": "Contains medical disclaimer",
+      "passed": true,
+      "evidence": "Report opens with: 'Disclaimer: This report is generated from consumer wearable data for informational purposes only. It does not constitute medical advice. Consult a licensed healthcare provider before making health decisions based on this report.'"
+    },
+    {
+      "text": "Uses bootstrap CI or p-values for at least some metrics",
+      "passed": true,
+      "evidence": "Multiple 95% CIs reported: RHR '77.9 bpm (95% CI: 76.7-79.0)', Mean glucose '106.9 mg/dL (95% CI: 106.5-107.4)', HRV '35.6 ms (95% CI: 34.5-36.5)', Steps last 90d '6,953 (95% CI: 5,543-8,750)'. P-values throughout: Mann-Kendall p<0.001, Granger p values, Cohen's d effect sizes."
+    },
+    {
+      "text": "Handles all data types gracefully without errors",
+      "passed": true,
+      "evidence": "Report covers 53 data types across all major categories (heart, glucose, activity, sleep, body composition, respiratory, audio, mobility) with no error messages or missing sections. The note 'All 20 statistical methods met their data requirements and were executed successfully' confirms no crashes."
+    }
+  ]
+}

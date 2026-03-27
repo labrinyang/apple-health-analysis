@@ -1,0 +1,54 @@
+{
+  "expectations": [
+    {
+      "text": "Runs both analysis scripts",
+      "passed": true,
+      "evidence": "Report contains both basic health metrics and advanced analytics results including Granger causality, Transfer Entropy, Sample Entropy, DFA, Poincare, Cosinor analysis, Kovatchev indices (LBGI/HBGI), CONGA, GVP, Biological Age, etc. The header states '20项同行评审统计方法，引用20篇学术文献'."
+    },
+    {
+      "text": "Report is written in Chinese",
+      "passed": true,
+      "evidence": "Report is written entirely in Chinese with section headers like '第0节: 执行摘要', '第1节: 健康仪表盘', '第7节: 代谢/血糖分析 (重点章节)'. Technical terms have Chinese translations."
+    },
+    {
+      "text": "Contains detailed glucose analysis with MAGE, MODD, TIR, LBGI/HBGI",
+      "passed": true,
+      "evidence": "Section 7 contains comprehensive glucose metrics: MAGE 37.7 mg/dL, MODD 16.9 mg/dL, TIR 97.84%, LBGI 1.08, HBGI 0.39, plus CV% 19.5%, CONGA-1h/2h/4h, GVP 30.75%, J-Index 16.3, GRI 4.7, ADRR 13.64, all with reference ranges."
+    },
+    {
+      "text": "Analyzes glucose-exercise relationship with causal inference",
+      "passed": true,
+      "evidence": "Section 7 contains Granger causality analysis for Steps->Glucose: Lag-2 significant (F=4.19, p=0.021, R²=0.346). Also includes immediate glucose response case studies (27-min walk -17.1 mg/dL), synchronous correlation matrix, lagged correlations, and a comprehensive summary table with evidence grades."
+    },
+    {
+      "text": "Shows 24-hour glucose profile",
+      "passed": true,
+      "evidence": "Section 7 '24小时血糖节律' contains a detailed table with hourly glucose means, P25, P75, P95, and CV% from 03:00 to 23:00. Also includes Cosinor analysis (MESOR 106.93, amplitude 9.89, acrophase 18:50, R²=0.1127)."
+    },
+    {
+      "text": "Contains composite health score table",
+      "passed": true,
+      "evidence": "Section 1 '健康仪表盘' contains a table with 8 dimensions scored with numeric values and letter grades (A, C, D+, F, D+, F, F, D) and overall score 47/D+."
+    },
+    {
+      "text": "Findings include evidence grades",
+      "passed": true,
+      "evidence": "Multiple findings include evidence grades: Executive summary has '证据等级: A', '证据等级: B', '证据等级: C'. Risk findings have explicit 'A' and 'B' grades. Glucose-exercise table has evidence grades D, C per data source."
+    },
+    {
+      "text": "Contains data quality/availability section",
+      "passed": true,
+      "evidence": "Section 2 '数据可用性与质量' contains a detailed table with 记录数, 覆盖率, 时间跨度, 可靠性, and 备注 for all data types, plus a '数据质量警告' subsection listing 4 specific quality concerns."
+    },
+    {
+      "text": "Provides specific recommendations about glucose management",
+      "passed": true,
+      "evidence": "Section 10 provides 7 personalized recommendations in Chinese including: 建议1-建立餐后运动习惯 (post-meal exercise with 14:00 and 20:00 timing), 建议3-重视睡眠管理 (sleep for glucose), 建议4-关注周末饮食, 建议6-持续CGM监测, 建议7-提高心肺功能 for glucose metabolism improvement."
+    },
+    {
+      "text": "Handles all data gracefully",
+      "passed": true,
+      "evidence": "Report covers all data types (heart, glucose, activity, sleep, body composition, HRV, audio, mobility) coherently. Explicitly notes limited CGM-exercise overlap (only 2 days) and handles it by using daily steps as a proxy. No error messages."
+    }
+  ]
+}

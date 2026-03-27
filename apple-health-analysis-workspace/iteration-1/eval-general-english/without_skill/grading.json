@@ -1,0 +1,64 @@
+{
+  "expectations": [
+    {
+      "text": "Runs both analyze_health.py AND advanced_analytics.py",
+      "passed": false,
+      "evidence": "Report contains only basic descriptive statistics (means, ranges, counts, monthly tables). No advanced analytics (no Sample Entropy, DFA, Poincare, Granger, Transfer Entropy, CCM, Biological Age, etc.). Only analyze_health.py was run."
+    },
+    {
+      "text": "Report starts with an executive summary of 3-5 key findings",
+      "passed": false,
+      "evidence": "Report starts with 'Personal Profile' section, not an executive summary. The 'Key Insights & Recommendations' section with 11 findings appears at the very end, not the beginning, and exceeds the 3-5 range."
+    },
+    {
+      "text": "Contains a composite health score table with letter grades",
+      "passed": false,
+      "evidence": "No health score table or letter grades appear anywhere in the report. There is no composite scoring system."
+    },
+    {
+      "text": "Contains a data availability/quality assessment section",
+      "passed": false,
+      "evidence": "No dedicated data quality/availability section. The report has a 'Data Types Overview' table listing counts, but no assessment of coverage, gaps, reliability, or quality."
+    },
+    {
+      "text": "Contains risk stratification with HIGH/MODERATE severity levels",
+      "passed": false,
+      "evidence": "No risk stratification with severity levels. The report provides observations and recommendations but does not categorize findings by risk severity (HIGH/MODERATE/LOW)."
+    },
+    {
+      "text": "Findings include evidence grades (A/B/C/D)",
+      "passed": false,
+      "evidence": "No evidence grades appear anywhere in the report. Findings are presented as plain observations without graded evidence levels."
+    },
+    {
+      "text": "Presents Granger causality or transfer entropy results",
+      "passed": false,
+      "evidence": "No causal inference analysis of any kind. No Granger causality, transfer entropy, or CCM results. The report contains no statistical tests beyond basic descriptive statistics."
+    },
+    {
+      "text": "Presents fitness age or biological age estimate",
+      "passed": false,
+      "evidence": "No fitness age or biological age estimates. VO2 Max is reported (30.1 mL/kg/min) with a note that it's 'below average' but no age equivalence or biological age model."
+    },
+    {
+      "text": "Ends with specific, data-grounded recommendations",
+      "passed": true,
+      "evidence": "Report ends with 'Key Insights & Recommendations' containing 11 numbered items with specific data references (e.g., 'VO2 Max is 30.1', 'BMI 31.0', 'step count has dropped from 10,572/day to 4,217/day'). Recommendations include actionable advice."
+    },
+    {
+      "text": "Contains medical disclaimer",
+      "passed": true,
+      "evidence": "Report ends with: 'Disclaimer: This report is generated from Apple Health export data for informational purposes only. It is not a medical diagnosis. Please consult a qualified healthcare professional for medical advice, diagnosis, or treatment.'"
+    },
+    {
+      "text": "Uses bootstrap CI or p-values for at least some metrics",
+      "passed": false,
+      "evidence": "No confidence intervals, p-values, or statistical tests appear in the report. All metrics are reported as simple descriptive statistics (means, ranges, counts)."
+    },
+    {
+      "text": "Handles all data types gracefully without errors",
+      "passed": true,
+      "evidence": "Report covers all 53 data types across multiple sections (heart, glucose, activity, sleep, body composition, respiratory, audio, mobility) with no error messages. Data is presented coherently."
+    }
+  ]
+}

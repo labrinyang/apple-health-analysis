@@ -11,11 +11,25 @@ A Claude Code skill that transforms raw Apple Health XML exports into comprehens
 
 ## Install
 
+### One-liner (clone + symlink)
+
 ```bash
-claude install-skill https://github.com/labrinyang/apple-health-analysis
+git clone https://github.com/labrinyang/apple-health-analysis ~/.claude/skills/apple-health-analysis
 ```
 
-Then say: **"Analyze my Apple Health data"** and point Claude to your `apple_health_export/` directory.
+### Or manually
+
+```bash
+# Clone anywhere you like
+git clone https://github.com/labrinyang/apple-health-analysis ~/my-skills/apple-health-analysis
+
+# Symlink into Claude Code's skills directory
+ln -sf ~/my-skills/apple-health-analysis ~/.claude/skills/apple-health-analysis
+```
+
+### Verify
+
+Restart Claude Code, then say: **"Analyze my Apple Health data"** — the skill should trigger automatically.
 
 ## What It Does
 

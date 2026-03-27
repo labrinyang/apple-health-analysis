@@ -1,0 +1,19 @@
+{
+  "eval_id": 1,
+  "eval_name": "general-english",
+  "prompt": "I just exported my Apple Health data from my iPhone. It's in the apple_health_export folder. Can you analyze it and tell me what's going on with my health?",
+  "assertions": [
+    {"name": "runs_both_scripts", "description": "Runs both analyze_health.py AND advanced_analytics.py"},
+    {"name": "has_executive_summary", "description": "Report starts with an executive summary of 3-5 key findings"},
+    {"name": "has_health_dashboard", "description": "Contains a composite health score table with letter grades"},
+    {"name": "has_data_quality", "description": "Contains a data availability/quality assessment section"},
+    {"name": "has_risk_flags", "description": "Contains risk stratification with HIGH/MODERATE severity levels"},
+    {"name": "has_evidence_grades", "description": "Findings include evidence grades (A/B/C/D)"},
+    {"name": "has_causal_inference", "description": "Presents Granger causality or transfer entropy results"},
+    {"name": "has_biological_age", "description": "Presents fitness age or biological age estimate"},
+    {"name": "has_recommendations", "description": "Ends with specific, data-grounded recommendations"},
+    {"name": "has_disclaimer", "description": "Contains medical disclaimer"},
+    {"name": "reports_confidence_intervals", "description": "Uses bootstrap CI or p-values for at least some metrics"},
+    {"name": "no_missing_data_crash", "description": "Handles all data types gracefully without errors"}
+  ]
+}

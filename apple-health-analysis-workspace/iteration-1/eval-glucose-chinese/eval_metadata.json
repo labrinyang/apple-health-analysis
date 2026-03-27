@@ -1,0 +1,17 @@
+{
+  "eval_id": 2,
+  "eval_name": "glucose-chinese",
+  "prompt": "我从iPhone导出了健康数据，在apple_health_export目录里。帮我做一个深度的健康分析报告，重点看血糖和运动的关系。",
+  "assertions": [
+    {"name": "runs_both_scripts", "description": "Runs both analysis scripts"},
+    {"name": "chinese_language", "description": "Report is written in Chinese"},
+    {"name": "glucose_deep_dive", "description": "Contains detailed glucose analysis with MAGE, MODD, TIR, LBGI/HBGI"},
+    {"name": "glucose_exercise_correlation", "description": "Analyzes glucose-exercise relationship with causal inference"},
+    {"name": "glucose_circadian", "description": "Shows 24-hour glucose profile"},
+    {"name": "has_health_dashboard", "description": "Contains composite health score table"},
+    {"name": "has_evidence_grades", "description": "Findings include evidence grades"},
+    {"name": "has_data_quality", "description": "Contains data quality/availability section"},
+    {"name": "has_recommendations", "description": "Provides specific recommendations about glucose management"},
+    {"name": "no_missing_data_crash", "description": "Handles all data gracefully"}
+  ]
+}

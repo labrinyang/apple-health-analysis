@@ -1,0 +1,54 @@
+{
+  "expectations": [
+    {
+      "text": "Runs both analysis scripts",
+      "passed": false,
+      "evidence": "Report contains only basic descriptive statistics and correlations (Pearson r). No advanced analytics: no Sample Entropy, DFA, Poincare, Granger causality, Transfer Entropy, CCM, Cosinor, LBGI/HBGI, MAGE, MODD, CONGA, GVP, Biological Age, etc. Only analyze_health.py appears to have been run."
+    },
+    {
+      "text": "Report is written in Chinese",
+      "passed": true,
+      "evidence": "Report is written entirely in Chinese with headers like '个人基本信息', '血糖总览', '运动与活动数据总览', '血糖与运动关系深度分析'. All commentary and analysis in Chinese."
+    },
+    {
+      "text": "Contains detailed glucose analysis with MAGE, MODD, TIR, LBGI/HBGI",
+      "passed": false,
+      "evidence": "Report has TIR analysis (90.5%) and CV% (19.5%), but NO MAGE, MODD, LBGI, or HBGI values. The glucose analysis uses basic statistics only (mean, median, SD, CV, GMI, eHbA1c)."
+    },
+    {
+      "text": "Analyzes glucose-exercise relationship with causal inference",
+      "passed": false,
+      "evidence": "Report analyzes glucose-exercise relationship with Pearson correlations (r=+0.236 steps-glucose) and case studies of 2 walking events, but NO causal inference methods (no Granger causality, no transfer entropy, no CCM)."
+    },
+    {
+      "text": "Shows 24-hour glucose profile",
+      "passed": true,
+      "evidence": "Section 2.3 '血糖日内波动模式（24小时曲线）' contains a detailed hourly table from 03:00-01:00 with average glucose, standard deviation, and characteristics for each time period."
+    },
+    {
+      "text": "Contains composite health score table",
+      "passed": false,
+      "evidence": "No composite health score table or letter grade system. The report provides individual metric assessments but no aggregated scoring."
+    },
+    {
+      "text": "Findings include evidence grades",
+      "passed": false,
+      "evidence": "No evidence grades (A/B/C/D) appear anywhere in the report. Findings are presented as plain observations without graded evidence levels."
+    },
+    {
+      "text": "Contains data quality/availability section",
+      "passed": false,
+      "evidence": "No dedicated data quality section. Section 4 has an important note about limited CGM-exercise overlap (仅2天), and the end has '分析局限性说明', but there is no systematic data quality/availability assessment table with coverage, reliability, and gaps."
+    },
+    {
+      "text": "Provides specific recommendations about glucose management",
+      "passed": true,
+      "evidence": "Section 10 provides 7 specific recommendations including: 建议1-建立餐后运动习惯 (post-meal exercise targeting 14:00 and 20:00 peaks, minimum 20 min), 建议3-重视睡眠管理 (r=-0.521 correlation), 建议4-关注周末饮食 (weekend glucose 6.68 mg/dL higher), and 建议6-持续CGM监测."
+    },
+    {
+      "text": "Handles all data gracefully",
+      "passed": true,
+      "evidence": "Report covers glucose, exercise, heart rate, HRV, sleep, body composition, and weight trends coherently. Handles the limited CGM-exercise overlap (2 days) by using daily steps as proxy. No error messages. Explicitly notes limitations."
+    }
+  ]
+}
