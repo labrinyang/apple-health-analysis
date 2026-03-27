@@ -2,46 +2,43 @@
 
 **Clinical-grade health data analysis for Apple Health exports.**
 
-A Claude Code skill that transforms raw Apple Health XML exports into comprehensive clinical-quality health assessment reports, applying 20+ peer-reviewed statistical methods with beautiful HTML visualization.
+Transforms raw Apple Health XML into comprehensive health assessment reports — 21 peer-reviewed statistical methods, 30 disease risk screenings, 35+ SVG visualizations, all in a beautiful HTML report with Claude's design system.
 
-<img src="https://img.shields.io/badge/Claude_Code-Skill-D97757?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCI+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiIGZpbGw9IiNENzc1N0EiLz48L3N2Zz4="/>
-<img src="https://img.shields.io/badge/Methods-20_papers-3B7DD8?style=for-the-badge"/>
-<img src="https://img.shields.io/badge/Python-3.6%2B-2D8B4E?style=for-the-badge"/>
+<img src="https://img.shields.io/badge/skills.sh-compatible-D97757?style=for-the-badge"/>
+<img src="https://img.shields.io/badge/Methods-21_papers-3B7DD8?style=for-the-badge"/>
+<img src="https://img.shields.io/badge/Disease_Screenings-30-C44536?style=for-the-badge"/>
 <img src="https://img.shields.io/badge/Dependencies-Zero-9B59B6?style=for-the-badge"/>
 
 ## Install
 
-### Via skills.sh (recommended — works with Claude Code, Cursor, Copilot, Codex, Gemini CLI, and more)
-
 ```bash
-npx skills add labrinyang/apple-health-analysis
+npx skills add labrinyang/apple-health-analysis -y -g
 ```
 
-### Via Claude Code Plugin CLI
+That's it. Installs globally to all supported agents: Claude Code, Cursor, GitHub Copilot, Codex, Gemini CLI, Cline, OpenCode, and more.
+
+<details>
+<summary>Alternative: Claude Code Plugin CLI</summary>
 
 ```bash
 claude plugins marketplace add labrinyang/apple-health-analysis
 claude plugins install apple-health-analysis
 ```
+</details>
 
-### Verify
-
-Restart your AI coding agent, then say: **"Analyze my Apple Health data"** — the skill triggers automatically.
-
-### Update
+<details>
+<summary>Update</summary>
 
 ```bash
-# skills.sh
 npx skills update
-
-# Claude Code
-claude plugins marketplace update apple-health-analysis
-claude plugins update apple-health-analysis
 ```
+</details>
+
+Then say: **"Analyze my Apple Health data"** — the skill triggers automatically.
 
 ## What It Does
 
-### 20 Peer-Reviewed Statistical Methods
+### 21 Peer-Reviewed Statistical Methods
 
 | Category | Methods |
 |----------|---------|
@@ -52,51 +49,63 @@ claude plugins update apple-health-analysis
 | **Statistical** | Mann-Kendall, Bootstrap CI, Cohen's d, Bayesian Change Points |
 | **Composite** | Biological Age, Fitness Age, Allostatic Load Index |
 
-### Beautiful HTML Reports
+### 30 Disease Risk Screenings
 
-Self-contained HTML report with 35+ SVG visualizations using Claude's design system:
+| Category | Conditions | Key Papers |
+|----------|-----------|------------|
+| **Endocrine** | T2D, Hypothyroidism, Hyperthyroidism, Insulin Resistance | FINDRISC, Lee 2021 |
+| **Cardiovascular** | CVD, Hypertension, CAD, AFib, Heart Failure, POTS | Framingham, Cole 1999 NEJM, CHARGE-AF |
+| **Respiratory** | OSA, COPD | STOP-BANG, Zhang 2025 |
+| **Neurological** | Parkinson's, Cognitive Decline, Seizure Risk | WATCH-PD, Doi 2022 JAMA |
+| **Musculoskeletal** | Sarcopenia, Fall Risk | EWGSOP2, Apple Walking Steadiness |
+| **Sleep** | Insomnia, REM Behavior Disorder, Circadian Disorder | Stefani 2023, Diago 2024 |
+| **Psychiatric** | Depression, Anxiety, Chronic Fatigue | Lyall 2018 Lancet Psych, Chalmers 2014 |
+| **Other** | Anemia, Hearing Loss, Infection/Fever, Metabolic Syndrome | Li 2021 Nature Med, Mishra 2020 Nature, WHO 2022 |
 
-- Circular gauge dashboards (8 health dimensions)
-- 24-hour circadian rhythm curves
-- Correlation heatmaps
+### HTML Report with 35+ Charts
+
+Self-contained HTML report (~160KB) using Claude's design system:
+
+- Circular gauge dashboards (8 health dimensions + overall score)
+- 24-hour circadian rhythm curves (HR + glucose)
+- Correlation heatmap (7×7 matrix)
 - Weight trajectory with regression projection
 - Heart rate zone donut charts
-- Blood glucose TIR visualization
-- Biological age comparison cards
+- Blood glucose TIR stacked bar
+- Disease risk screening cards with color-coded severity
+- Biological/Fitness age comparison
 - Trend momentum sparklines
-- Causal inference verdict tables
-- And much more...
+- 14 empty narrative slots for AI to fill with personalized analysis
 
-### Clinical-Grade Analysis
+### Clinical Rigor
 
-- **Data Quality Assessment**: Every data stream evaluated for reliability before interpretation
-- **Evidence Grading**: Each finding carries A/B/C/D confidence based on statistical significance + sample size
-- **Risk Stratification**: HIGH / MODERATE / LOW risk flags with clinical significance
-- **Missing Data Handling**: Graceful degradation — never crashes, never fabricates data
-- **Multi-language**: Reports generated in English or Chinese (matches user language)
+- **Data Quality Assessment**: 11 data streams evaluated for reliability before interpretation
+- **Evidence Grading**: Each finding carries A/B/C/D confidence
+- **30 Disease Screenings**: Paper-cited thresholds from 40+ publications
+- **Missing Data Handling**: Graceful degradation — never crashes, never fabricates
+- **Multi-language**: EN/ZH with `--lang` flag
 
 ## How to Export Apple Health Data
 
-1. Open the **Health** app on your iPhone
-2. Tap your profile picture (top right)
-3. Scroll down and tap **Export All Health Data**
-4. Wait for the export to complete (may take a few minutes)
-5. Save/share the `apple_health_export` folder to your computer
+1. Open **Health** app on iPhone → tap profile picture (top right)
+2. Scroll down → **Export All Health Data**
+3. Save the `apple_health_export` folder to your computer
 
 ## Architecture
 
 ```
 apple-health-analysis/
-├── SKILL.md                              # Skill instructions
+├── SKILL.md                              # Skill instructions (180 lines)
 ├── scripts/
-│   ├── analyze_health.py                 # Base analysis engine (19 JSON sections)
-│   ├── advanced_analytics.py             # 20 peer-reviewed methods
-│   └── generate_report_html.py           # HTML report generator (35+ charts)
+│   ├── analyze_health.py                 # Base analysis (19 JSON sections)
+│   ├── advanced_analytics.py             # 21 methods + 30 disease screenings
+│   └── generate_report_html.py           # HTML report (35+ SVG charts)
 ├── references/
 │   ├── clinical_interpretation.md        # Evidence-based reference ranges
-│   └── report_template.md               # Report structure template
+│   ├── report_template.md               # Report structure guide
+│   └── wearable_screening_literature.md  # 1233-line disease screening evidence base
 └── evals/
-    └── evals.json                        # Test cases
+    └── evals.json
 ```
 
 ## Supported Data Types
@@ -108,29 +117,30 @@ apple-health-analysis/
 | HRV (SDNN) | Poincare SD1/SD2, DFA alpha, trend |
 | Blood Glucose (CGM) | TIR, MAGE, MODD, LBGI/HBGI, ADRR, CONGA, GVP |
 | Steps | Daily/weekly/monthly patterns, Mann-Kendall trend |
-| Workouts | HR during exercise, recovery analysis, type comparison |
+| Workouts | HR during exercise, recovery, type comparison |
 | Sleep | Architecture (deep/REM/core), efficiency, duration |
 | Body Weight | Regression projection, fat/lean decomposition |
 | VO2 Max | Percentile for age/sex, fitness age |
-| SpO2 | Blood oxygen assessment |
-| Respiratory Rate | Trend analysis |
+| SpO2 | Blood oxygen, nocturnal desaturation screening |
+| Walking Speed | Sarcopenia screening, cognitive decline proxy |
+| Walking Steadiness | Fall risk assessment |
 | Audio Exposure | WHO safe listening assessment |
+| Wrist Temperature | Infection/fever detection |
 
 ## References
 
-The advanced analysis engine cites 20 peer-reviewed publications including:
+40+ peer-reviewed publications including:
 
 - Granger (1969) *Econometrica* — Causality testing
 - Sugihara et al. (2012) *Science* — Convergent Cross Mapping
-- Schreiber (2000) *Physical Review Letters* — Transfer Entropy
-- Peng et al. (1994) *Physical Review E* — DFA
-- Richman & Moorman (2000) *Am J Physiol* — Sample Entropy
 - Kovatchev et al. (2002) *Diabetes Care* — Glucose risk indices
-- Battelino et al. (2019) *Diabetes Care* — Time-in-Range consensus
-- Cornelissen (2014) *Theor Biol Med Model* — Cosinor analysis
-- Adams & MacKay (2007) — Bayesian change point detection
+- Cole (1999) *NEJM* — Heart rate recovery
+- Mishra et al. (2020) *Nature Biomedical Engineering* — Infection detection
+- Li et al. (2021) *Nature Medicine* — Wearable blood test prediction
+- Doi et al. (2022) *JAMA Network Open* — Dual decline and dementia
 - Nes et al. (2013) *MSSE* — Fitness age
-- And 10 more...
+- Battelino et al. (2019) *Diabetes Care* — CGM consensus
+- And 30+ more...
 
 ## License
 
