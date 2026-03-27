@@ -1,0 +1,23 @@
+{
+  "skill_name": "apple-health-analysis",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I just exported my Apple Health data from my iPhone. It's in the apple_health_export folder. Can you analyze it and tell me what's going on with my health?",
+      "expected_output": "A comprehensive health report covering all available dimensions (heart rate, activity, sleep, body composition, etc.) with composite health scoring, risk flags, and actionable recommendations. Should use the analysis script to parse the XML, present findings in a structured report, and provide clinical interpretations.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "我从iPhone导出了健康数据，在apple_health_export目录里。帮我做一个深度的健康分析报告，重点看血糖和运动的关系。",
+      "expected_output": "A Chinese-language health report with emphasis on glucose-exercise relationships. Should include CGM metrics (MAGE, MODD, TIR), glucose response to workouts, circadian glucose patterns, and cross-metric correlations between activity and glucose. Full report with composite scoring included.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I've been wearing my Apple Watch for about a year. I feel like my fitness has been declining but I'm not sure. Can you look at my health export data and tell me if there are any concerning trends?",
+      "expected_output": "A trend-focused analysis that emphasizes change-point detection, trend momentum (30d vs 90d vs 180d), VO2 Max trajectory, RHR trends, step count regime shifts, and weight trajectory projection. Should present before/after comparisons of key metrics and flag the specific timepoints where health metrics shifted.",
+      "files": []
+    }
+  ]
+}
