@@ -1242,7 +1242,11 @@ def allostatic_load(rhr, hrv, bmi, steps, sleep_h, vo2max, glucose_cv=None, age=
 
 def disease_risk_screening(age, sex, bmi, rhr, hrv_sdnn, vo2max, steps_per_day,
                            sleep_hours, glucose_ts, spo2_ts, hr_ts,
-                           dfa_alpha, is_val, iv_val, day_night_ratio, weight_trend_kg_yr):
+                           dfa_alpha, is_val, iv_val, day_night_ratio, weight_trend_kg_yr,
+                           walking_speed=None, stair_speed=None, walking_steadiness=None,
+                           wrist_temp=None, daylight_minutes=None, headphone_audio_db=None,
+                           resp_rate=None, sleep_efficiency=None, sleep_deep_pct=None,
+                           sleep_rem_pct=None):
     """
     Evidence-based disease risk screening from wearable biomarkers.
     Each condition uses published clinical criteria adapted for consumer wearables.
@@ -1627,6 +1631,1096 @@ def disease_risk_screening(age, sex, bmi, rhr, hrv_sdnn, vo2max, steps_per_day,
                            "Perez et al. (2019) NEJM 381:1909-1917 (Apple Watch AF detection)"]
         })
 
+    # ------------------------------------------------------------------
+    # 9. HYPOTHYROIDISM SCREENING
+    # (Lee DY et al. 2021, Endocrinology and Metabolism 36(6):1121-1130)
+    # ------------------------------------------------------------------
+    hypo_score = 0
+    hypo_max = 0
+    hypo_factors = []
+
+    if rhr is not None:
+        hypo_max += 2
+        if rhr < 55: hypo_score += 2; hypo_factors.append(f"Low RHR {rhr:.0f} bpm — bradycardia (+2)")
+        elif rhr < 60: hypo_score += 1; hypo_factors.append(f"RHR {rhr:.0f} bpm — borderline low (+1)")
+
+    if weight_trend_kg_yr is not None:
+        hypo_max += 2
+        if weight_trend_kg_yr > 3: hypo_score += 2; hypo_factors.append(f"Significant weight gain trend (+2)")
+        elif weight_trend_kg_yr > 1.5: hypo_score += 1; hypo_factors.append(f"Moderate weight gain trend (+1)")
+
+    if sleep_hours is not None:
+        hypo_max += 2
+        if sleep_hours > 10: hypo_score += 2; hypo_factors.append(f"Excessive sleep {sleep_hours:.1f}h — hypersomnia (+2)")
+        elif sleep_hours > 9: hypo_score += 1; hypo_factors.append(f"Long sleep {sleep_hours:.1f}h (+1)")
+
+    if wrist_temp is not None:
+        hypo_max += 1
+        if wrist_temp < 32.5: hypo_score += 1; hypo_factors.append(f"Low wrist temperature {wrist_temp:.1f}C (+1)")
+
+    if steps_per_day is not None:
+        hypo_max += 1
+        if steps_per_day < 4000: hypo_score += 1; hypo_factors.append(f"Reduced activity <4000 steps (+1)")
+
+    if hypo_max >= 4 and len(hypo_factors) >= 2:
+        risk_pct = hypo_score / hypo_max * 100
+        risk_level = "low" if risk_pct < 25 else "moderate" if risk_pct < 50 else "elevated" if risk_pct < 75 else "high"
+        screenings.append({
+            "condition": "Hypothyroidism",
+            "risk_level": risk_level,
+            "score": hypo_score,
+            "max_score": hypo_max,
+            "risk_pct": round(risk_pct, 1),
+            "factors": hypo_factors,
+            "recommendation": "Consider TSH and free T4 blood test if elevated" if risk_pct >= 50 else "Low hypothyroidism risk based on wearable markers",
+            "references": ["Lee DY et al. (2021) Endocrinology and Metabolism 36(6):1121-1130",
+                           "Biondi B & Cooper DS (2008) Endocrine Reviews 29(1):76-131"]
+        })
+
+    # ------------------------------------------------------------------
+    # 10. HYPERTHYROIDISM SCREENING
+    # (Lee DY et al. 2021)
+    # ------------------------------------------------------------------
+    hyper_score = 0
+    hyper_max = 0
+    hyper_factors = []
+
+    if rhr is not None:
+        hyper_max += 2
+        if rhr > 100: hyper_score += 2; hyper_factors.append(f"Resting tachycardia RHR={rhr:.0f} bpm (+2)")
+        elif rhr > 90: hyper_score += 1; hyper_factors.append(f"Elevated RHR={rhr:.0f} bpm (+1)")
+
+    if weight_trend_kg_yr is not None:
+        hyper_max += 2
+        if weight_trend_kg_yr < -3: hyper_score += 2; hyper_factors.append(f"Significant weight loss trend (+2)")
+        elif weight_trend_kg_yr < -1.5: hyper_score += 1; hyper_factors.append(f"Moderate weight loss trend (+1)")
+
+    if sleep_hours is not None:
+        hyper_max += 1
+        if sleep_hours < 5: hyper_score += 1; hyper_factors.append(f"Short sleep {sleep_hours:.1f}h — insomnia pattern (+1)")
+
+    if hrv_sdnn is not None:
+        hyper_max += 2
+        if hrv_sdnn < 15: hyper_score += 2; hyper_factors.append(f"Very low HRV SDNN={hrv_sdnn:.0f}ms — sympathetic overdrive (+2)")
+        elif hrv_sdnn < 25: hyper_score += 1; hyper_factors.append(f"Low HRV SDNN={hrv_sdnn:.0f}ms (+1)")
+
+    if sleep_efficiency is not None:
+        hyper_max += 1
+        if sleep_efficiency < 80: hyper_score += 1; hyper_factors.append(f"Low sleep efficiency {sleep_efficiency:.0f}% (+1)")
+
+    if hyper_max >= 4 and len(hyper_factors) >= 2:
+        risk_pct = hyper_score / hyper_max * 100
+        risk_level = "low" if risk_pct < 25 else "moderate" if risk_pct < 50 else "elevated" if risk_pct < 75 else "high"
+        screenings.append({
+            "condition": "Hyperthyroidism",
+            "risk_level": risk_level,
+            "score": hyper_score,
+            "max_score": hyper_max,
+            "risk_pct": round(risk_pct, 1),
+            "factors": hyper_factors,
+            "recommendation": "Consider TSH and free T4 blood test if elevated" if risk_pct >= 50 else "Low hyperthyroidism risk based on wearable markers",
+            "references": ["Lee DY et al. (2021) Endocrinology and Metabolism 36(6):1121-1130",
+                           "Boelaert K et al. (2010) Am J Med 123(2):183.e1-9"]
+        })
+
+    # ------------------------------------------------------------------
+    # 11. INSULIN RESISTANCE / PRE-DIABETES
+    # (Hall 2018 PLOS Biology, Shah 2019, Battelino 2019, FINDRISC)
+    # ------------------------------------------------------------------
+    ir_score = 0
+    ir_max = 0
+    ir_factors = []
+
+    if glucose_ts and len(glucose_ts) > 50:
+        gvals = [v for _, v in glucose_ts]
+        g_mean = statistics.mean(gvals)
+        g_sd = statistics.stdev(gvals) if len(gvals) >= 2 else 0
+
+        # Fasting glucose (4-6 AM)
+        fasting = [v for dt, v in glucose_ts if 4 <= dt.hour <= 6]
+        if fasting:
+            fasting_avg = statistics.mean(fasting)
+            ir_max += 3
+            if fasting_avg >= 126: ir_score += 3; ir_factors.append(f"Fasting glucose {fasting_avg:.0f} mg/dL — diabetic range (+3)")
+            elif fasting_avg >= 100: ir_score += 2; ir_factors.append(f"Fasting glucose {fasting_avg:.0f} mg/dL — impaired (+2)")
+
+        # Time in range (70-180)
+        tir = sum(1 for v in gvals if 70 <= v <= 180) / len(gvals) * 100
+        ir_max += 2
+        if tir < 90: ir_score += 2; ir_factors.append(f"TIR {tir:.0f}% — below 90% (+2)")
+        elif tir < 96: ir_score += 1; ir_factors.append(f"TIR {tir:.0f}% — below healthy 96% (+1)")
+
+        # Glucose CV%
+        if g_mean > 0:
+            cv_pct = g_sd / g_mean * 100
+            ir_max += 2
+            if cv_pct > 36: ir_score += 2; ir_factors.append(f"Glucose CV {cv_pct:.0f}% — high variability (+2)")
+            elif cv_pct > 20: ir_score += 1; ir_factors.append(f"Glucose CV {cv_pct:.0f}% — moderate variability (+1)")
+
+        # GMI (estimated A1c)
+        gmi = 3.31 + 0.02392 * g_mean
+        ir_max += 2
+        if gmi >= 6.5: ir_score += 2; ir_factors.append(f"GMI {gmi:.1f}% — diabetic range (+2)")
+        elif gmi >= 5.7: ir_score += 1; ir_factors.append(f"GMI {gmi:.1f}% — pre-diabetic range (+1)")
+
+        # Dawn phenomenon
+        pre_dawn = [v for dt, v in glucose_ts if 3 <= dt.hour <= 4]
+        post_dawn = [v for dt, v in glucose_ts if 7 <= dt.hour <= 9]
+        if pre_dawn and post_dawn:
+            dawn_rise = statistics.mean(post_dawn) - statistics.mean(pre_dawn)
+            ir_max += 1
+            if dawn_rise > 20: ir_score += 1; ir_factors.append(f"Dawn phenomenon rise {dawn_rise:.0f} mg/dL (+1)")
+
+    if bmi is not None:
+        ir_max += 2
+        if bmi >= 30: ir_score += 2; ir_factors.append(f"BMI {bmi:.1f} — obesity (+2)")
+        elif bmi >= 25: ir_score += 1; ir_factors.append(f"BMI {bmi:.1f} — overweight (+1)")
+
+    if age is not None:
+        ir_max += 1
+        if age >= 45: ir_score += 1; ir_factors.append(f"Age >=45 (+1)")
+
+    if steps_per_day is not None:
+        ir_max += 1
+        if steps_per_day < 5000: ir_score += 1; ir_factors.append(f"Sedentary <5000 steps/day (+1)")
+
+    if ir_max >= 4 and len(ir_factors) >= 2:
+        risk_pct = ir_score / ir_max * 100
+        risk_level = "low" if risk_pct < 25 else "moderate" if risk_pct < 50 else "elevated" if risk_pct < 75 else "high"
+        screenings.append({
+            "condition": "Insulin Resistance / Pre-diabetes",
+            "risk_level": risk_level,
+            "score": ir_score,
+            "max_score": ir_max,
+            "risk_pct": round(risk_pct, 1),
+            "factors": ir_factors,
+            "recommendation": "Consider HbA1c and OGTT; consult endocrinologist if elevated" if risk_pct >= 50 else "Glucose patterns within acceptable range",
+            "references": ["Hall H et al. (2018) PLOS Biology 16(7):e2005143",
+                           "Shah VN et al. (2019) J Clin Endocrinol Metab 104(10):4356-4364",
+                           "Battelino T et al. (2019) Diabetes Care 42(8):1593-1603",
+                           "Monnier L et al. (2017) Diabetes Care 40(7):832-838"]
+        })
+
+    # ------------------------------------------------------------------
+    # 12. HYPERTENSION RISK
+    # (Krivoshei 2022, Palatini 1999, Fox 2007, Tsuji 1996)
+    # ------------------------------------------------------------------
+    htn_score = 0
+    htn_max = 0
+    htn_factors = []
+
+    if rhr is not None:
+        htn_max += 2
+        if rhr > 80: htn_score += 2; htn_factors.append(f"RHR >80 bpm ({rhr:.0f}) (+2)")
+        elif rhr > 75: htn_score += 1; htn_factors.append(f"RHR 75-80 bpm ({rhr:.0f}) (+1)")
+
+    if hrv_sdnn is not None:
+        htn_max += 2
+        if hrv_sdnn < 25: htn_score += 2; htn_factors.append(f"HRV SDNN <25 ms ({hrv_sdnn:.0f}) (+2)")
+        elif hrv_sdnn < 35: htn_score += 1; htn_factors.append(f"HRV SDNN 25-35 ms ({hrv_sdnn:.0f}) (+1)")
+
+    if day_night_ratio is not None:
+        htn_max += 2
+        if day_night_ratio < 1.10: htn_score += 2; htn_factors.append(f"Non-dipping HR pattern ratio={day_night_ratio:.2f} (+2)")
+    elif hr_ts:
+        day_hr = [v for dt, v in hr_ts if 8 <= dt.hour <= 20]
+        night_hr = [v for dt, v in hr_ts if 0 <= dt.hour <= 5]
+        if day_hr and night_hr:
+            dn_ratio = statistics.mean(day_hr) / statistics.mean(night_hr)
+            htn_max += 2
+            if dn_ratio < 1.10: htn_score += 2; htn_factors.append(f"Non-dipping HR pattern ratio={dn_ratio:.2f} (+2)")
+
+    if steps_per_day is not None:
+        htn_max += 2
+        if steps_per_day < 4000: htn_score += 2; htn_factors.append(f"Sedentary <4000 steps/day (+2)")
+        elif steps_per_day < 6000: htn_score += 1; htn_factors.append(f"Low activity <6000 steps/day (+1)")
+
+    if bmi is not None:
+        htn_max += 2
+        if bmi >= 30: htn_score += 2; htn_factors.append(f"BMI >=30 — obesity (+2)")
+        elif bmi >= 27: htn_score += 1; htn_factors.append(f"BMI 27-30 (+1)")
+
+    if age is not None:
+        htn_max += 2
+        if age >= 55: htn_score += 2; htn_factors.append(f"Age >=55 (+2)")
+        elif age >= 45: htn_score += 1; htn_factors.append(f"Age >=45 (+1)")
+
+    if htn_max >= 4 and len(htn_factors) >= 2:
+        risk_pct = htn_score / htn_max * 100
+        risk_level = "low" if risk_pct < 25 else "moderate" if risk_pct < 50 else "elevated" if risk_pct < 75 else "high"
+        screenings.append({
+            "condition": "Hypertension Risk",
+            "risk_level": risk_level,
+            "score": htn_score,
+            "max_score": htn_max,
+            "risk_pct": round(risk_pct, 1),
+            "factors": htn_factors,
+            "recommendation": "Consider home BP monitoring and physician evaluation" if risk_pct >= 50 else "Low hypertension risk based on available markers",
+            "references": ["Krivoshei L et al. (2022) medRxiv (AI-PPG-ACC-HTN model)",
+                           "Palatini P et al. (1999) J Hypertens 17(7):903-910",
+                           "Fox K et al. (2007) CMAJ 177(5):461-466",
+                           "Tsuji H et al. (1996) Circulation 94(11):2850-2855"]
+        })
+
+    # ------------------------------------------------------------------
+    # 13. CORONARY ARTERY DISEASE (CAD)
+    # (Cole 1999 NEJM — HR recovery <=12 bpm)
+    # ------------------------------------------------------------------
+    cad_score = 0
+    cad_max = 0
+    cad_factors = []
+
+    if vo2max is not None:
+        cad_max += 3
+        if vo2max < 28: cad_score += 3; cad_factors.append(f"VO2 Max <28 — poor CRF (+3)")
+        elif vo2max < 35: cad_score += 2; cad_factors.append(f"VO2 Max <35 — below average (+2)")
+        elif vo2max < 40: cad_score += 1; cad_factors.append(f"VO2 Max <40 (+1)")
+
+    if rhr is not None:
+        cad_max += 2
+        if rhr > 90: cad_score += 2; cad_factors.append(f"RHR >90 bpm (+2)")
+        elif rhr > 80: cad_score += 1; cad_factors.append(f"RHR >80 bpm (+1)")
+
+    if hrv_sdnn is not None:
+        cad_max += 1
+        if hrv_sdnn < 20: cad_score += 1; cad_factors.append(f"HRV SDNN <20 ms (+1)")
+
+    if age is not None:
+        cad_max += 2
+        if age >= 55: cad_score += 2; cad_factors.append(f"Age >=55 (+2)")
+        elif age >= 45: cad_score += 1; cad_factors.append(f"Age >=45 (+1)")
+
+    if bmi is not None:
+        cad_max += 1
+        if bmi >= 30: cad_score += 1; cad_factors.append(f"BMI >=30 (+1)")
+
+    if sex == "Male":
+        cad_max += 1; cad_score += 1; cad_factors.append("Male sex (+1)")
+
+    if steps_per_day is not None:
+        cad_max += 1
+        if steps_per_day < 4000: cad_score += 1; cad_factors.append(f"Sedentary <4000 steps/day (+1)")
+
+    if cad_max >= 4 and len(cad_factors) >= 2:
+        risk_pct = cad_score / cad_max * 100
+        risk_level = "low" if risk_pct < 25 else "moderate" if risk_pct < 50 else "elevated" if risk_pct < 75 else "high"
+        screenings.append({
+            "condition": "Coronary Artery Disease Risk",
+            "risk_level": risk_level,
+            "score": cad_score,
+            "max_score": cad_max,
+            "risk_pct": round(risk_pct, 1),
+            "factors": cad_factors,
+            "recommendation": "Consider cardiac stress test; HRR1 <=12 bpm post-exercise is a strong mortality predictor" if risk_pct >= 50 else "Low CAD risk based on available markers",
+            "references": ["Cole CR et al. (1999) NEJM 341(18):1351-1357 (HRR1 <=12 bpm: RR=4.0)",
+                           "Kodama S et al. (2009) JAMA 301(19):2024-2035",
+                           "D'Agostino RB et al. (2008) Circulation 117(6):743-753"]
+        })
+
+    # ------------------------------------------------------------------
+    # 14. ORTHOSTATIC HYPOTENSION / POTS
+    # (Jang 2020, Sheldon 2015)
+    # ------------------------------------------------------------------
+    pots_score = 0
+    pots_max = 0
+    pots_factors = []
+
+    if hr_ts and len(hr_ts) > 100:
+        # Detect HR spikes: sudden increases >25 bpm in short windows
+        hr_sorted = sorted(hr_ts, key=lambda x: x[0])
+        spike_count = 0
+        total_hours = 0
+        if len(hr_sorted) >= 2:
+            total_hours = max(1, (hr_sorted[-1][0] - hr_sorted[0][0]).total_seconds() / 3600)
+            for i in range(1, len(hr_sorted)):
+                dt_diff = (hr_sorted[i][0] - hr_sorted[i-1][0]).total_seconds()
+                if 0 < dt_diff < 300:  # within 5 min
+                    hr_diff = hr_sorted[i][1] - hr_sorted[i-1][1]
+                    if hr_diff > 25:
+                        spike_count += 1
+        spike_rate = spike_count / total_hours if total_hours > 0 else 0
+        pots_max += 2
+        if spike_rate >= 0.9: pots_score += 2; pots_factors.append(f"HR spike rate {spike_rate:.2f}/hour — elevated (+2)")
+        elif spike_rate >= 0.5: pots_score += 1; pots_factors.append(f"HR spike rate {spike_rate:.2f}/hour — borderline (+1)")
+
+    if hrv_sdnn is not None:
+        pots_max += 2
+        if hrv_sdnn < 25: pots_score += 2; pots_factors.append(f"Low HRV SDNN <25 ms (+2)")
+        elif hrv_sdnn < 35: pots_score += 1; pots_factors.append(f"HRV SDNN 25-35 ms (+1)")
+
+    if day_night_ratio is not None:
+        pots_max += 1
+        if day_night_ratio > 1.60: pots_score += 1; pots_factors.append(f"Extreme dipping ratio {day_night_ratio:.2f} — orthostatic tendency (+1)")
+    elif hr_ts:
+        day_hr = [v for dt, v in hr_ts if 8 <= dt.hour <= 20]
+        night_hr = [v for dt, v in hr_ts if 0 <= dt.hour <= 5]
+        if day_hr and night_hr:
+            dn = statistics.mean(day_hr) / statistics.mean(night_hr)
+            pots_max += 1
+            if dn > 1.60: pots_score += 1; pots_factors.append(f"Extreme dipping ratio {dn:.2f} (+1)")
+
+    if rhr is not None:
+        pots_max += 1
+        if rhr > 90: pots_score += 1; pots_factors.append(f"Elevated RHR {rhr:.0f} bpm (+1)")
+
+    if pots_max >= 3 and len(pots_factors) >= 2:
+        risk_pct = pots_score / pots_max * 100
+        risk_level = "low" if risk_pct < 25 else "moderate" if risk_pct < 50 else "elevated" if risk_pct < 75 else "high"
+        screenings.append({
+            "condition": "Orthostatic Hypotension / POTS",
+            "risk_level": risk_level,
+            "score": pots_score,
+            "max_score": pots_max,
+            "risk_pct": round(risk_pct, 1),
+            "factors": pots_factors,
+            "recommendation": "Consider tilt-table test if elevated" if risk_pct >= 50 else "Low orthostatic risk based on HR patterns",
+            "references": ["Jang K et al. (2020) Sensors 20(14):3819",
+                           "Sheldon RS et al. (2015) Heart Rhythm 12(6):e41-63"]
+        })
+
+    # ------------------------------------------------------------------
+    # 15. COPD INDICATORS
+    # (Zhang 2025, Stove 2023, Wu 2024)
+    # ------------------------------------------------------------------
+    copd_score = 0
+    copd_max = 0
+    copd_factors = []
+
+    if spo2_ts and len(spo2_ts) > 20:
+        spo2_vals = [v for _, v in spo2_ts]
+        resting_spo2 = statistics.mean(spo2_vals)
+        nocturnal_spo2 = [v for dt, v in spo2_ts if 0 <= dt.hour <= 6]
+        copd_max += 3
+        if resting_spo2 < 92: copd_score += 3; copd_factors.append(f"Resting SpO2 <92% ({resting_spo2:.1f}%) (+3)")
+        elif resting_spo2 < 94: copd_score += 2; copd_factors.append(f"Resting SpO2 <94% ({resting_spo2:.1f}%) (+2)")
+        elif resting_spo2 < 96: copd_score += 1; copd_factors.append(f"Resting SpO2 <96% ({resting_spo2:.1f}%) (+1)")
+
+        if nocturnal_spo2:
+            noct_nadir = min(nocturnal_spo2)
+            copd_max += 2
+            if noct_nadir < 85: copd_score += 2; copd_factors.append(f"Nocturnal SpO2 nadir <85% (+2)")
+            elif noct_nadir < 88: copd_score += 1; copd_factors.append(f"Nocturnal SpO2 nadir <88% (+1)")
+
+    if resp_rate is not None:
+        copd_max += 2
+        if resp_rate > 22: copd_score += 2; copd_factors.append(f"Elevated respiratory rate {resp_rate:.0f}/min (+2)")
+        elif resp_rate > 18: copd_score += 1; copd_factors.append(f"Borderline respiratory rate {resp_rate:.0f}/min (+1)")
+
+    if vo2max is not None:
+        copd_max += 1
+        if vo2max < 22: copd_score += 1; copd_factors.append(f"Very low VO2 Max {vo2max:.0f} — activity limitation (+1)")
+
+    if steps_per_day is not None:
+        copd_max += 1
+        if steps_per_day < 3000: copd_score += 1; copd_factors.append(f"Very low activity <3000 steps/day (+1)")
+
+    if copd_max >= 3 and len(copd_factors) >= 2:
+        risk_pct = copd_score / copd_max * 100
+        risk_level = "low" if risk_pct < 25 else "moderate" if risk_pct < 50 else "elevated" if risk_pct < 75 else "high"
+        screenings.append({
+            "condition": "COPD Indicators",
+            "risk_level": risk_level,
+            "score": copd_score,
+            "max_score": copd_max,
+            "risk_pct": round(risk_pct, 1),
+            "factors": copd_factors,
+            "recommendation": "Consider spirometry (pulmonary function test) if elevated" if risk_pct >= 50 else "Respiratory markers within acceptable range",
+            "references": ["Zhang C et al. (2025) Digital Health 11, DOI:10.1177/20552076251320730",
+                           "Stove MP et al. (2023) Resp Care 68(7)",
+                           "Wu CT et al. (2024) JMIR mHealth 12:e63047"]
+        })
+
+    # ------------------------------------------------------------------
+    # 16. PARKINSON'S EARLY DETECTION
+    # (Adams 2024 WATCH-PD, Stefani 2023, Diago 2024)
+    # ------------------------------------------------------------------
+    pd_score = 0
+    pd_max = 0
+    pd_factors = []
+
+    if walking_steadiness is not None:
+        pd_max += 3
+        if walking_steadiness == "Very Low": pd_score += 3; pd_factors.append("Walking Steadiness Very Low (+3)")
+        elif walking_steadiness == "Low": pd_score += 2; pd_factors.append("Walking Steadiness Low (+2)")
+
+    if walking_speed is not None:
+        pd_max += 2
+        if walking_speed < 0.8: pd_score += 2; pd_factors.append(f"Walking speed <0.8 m/s ({walking_speed:.2f}) (+2)")
+        elif walking_speed < 1.0: pd_score += 1; pd_factors.append(f"Walking speed <1.0 m/s ({walking_speed:.2f}) (+1)")
+
+    if sleep_rem_pct is not None:
+        pd_max += 2
+        # Elevated REM movement (RBD proxy) -- abnormal REM patterns
+        if sleep_rem_pct < 10: pd_score += 2; pd_factors.append(f"Very low REM sleep {sleep_rem_pct:.0f}% — possible RBD (+2)")
+        elif sleep_rem_pct < 15: pd_score += 1; pd_factors.append(f"Low REM sleep {sleep_rem_pct:.0f}% (+1)")
+
+    if age is not None:
+        pd_max += 1
+        if age >= 60: pd_score += 1; pd_factors.append(f"Age >=60 (+1)")
+
+    if steps_per_day is not None:
+        pd_max += 1
+        if steps_per_day < 4000: pd_score += 1; pd_factors.append(f"Reduced activity <4000 steps (+1)")
+
+    if pd_max >= 3 and len(pd_factors) >= 2:
+        risk_pct = pd_score / pd_max * 100
+        risk_level = "low" if risk_pct < 25 else "moderate" if risk_pct < 50 else "elevated" if risk_pct < 75 else "high"
+        screenings.append({
+            "condition": "Parkinson's Disease (early markers)",
+            "risk_level": risk_level,
+            "score": pd_score,
+            "max_score": pd_max,
+            "risk_pct": round(risk_pct, 1),
+            "factors": pd_factors,
+            "recommendation": "Consider neurological evaluation if elevated; RBD is a strong Parkinson's prodrome" if risk_pct >= 50 else "Low risk based on gait and sleep markers",
+            "references": ["Adams JL et al. (2024) npj Parkinson's Disease 10:64 (WATCH-PD)",
+                           "Stefani A et al. (2023) Movement Disorders 38(5):847-855",
+                           "Diago EB et al. (2024) npj Digital Medicine 8:158"]
+        })
+
+    # ------------------------------------------------------------------
+    # 17. COGNITIVE DECLINE RISK
+    # (Doi 2022 JAMA, Grande 2019, Witting 1990)
+    # ------------------------------------------------------------------
+    cog_score = 0
+    cog_max = 0
+    cog_factors = []
+
+    if walking_speed is not None:
+        cog_max += 3
+        if walking_speed < 0.8: cog_score += 3; cog_factors.append(f"Walking speed <0.8 m/s — strong dementia risk marker (+3)")
+        elif walking_speed < 1.0: cog_score += 1; cog_factors.append(f"Walking speed <1.0 m/s (+1)")
+
+    if is_val is not None:
+        cog_max += 2
+        if is_val < 0.3: cog_score += 2; cog_factors.append(f"Very unstable circadian rhythm IS={is_val:.2f} (+2)")
+        elif is_val < 0.4: cog_score += 1; cog_factors.append(f"Unstable circadian IS={is_val:.2f} (+1)")
+
+    if iv_val is not None:
+        cog_max += 2
+        if iv_val > 1.0: cog_score += 2; cog_factors.append(f"Highly fragmented activity IV={iv_val:.2f} (+2)")
+        elif iv_val > 0.7: cog_score += 1; cog_factors.append(f"Fragmented activity IV={iv_val:.2f} (+1)")
+
+    if sleep_efficiency is not None:
+        cog_max += 1
+        if sleep_efficiency < 75: cog_score += 1; cog_factors.append(f"Low sleep efficiency {sleep_efficiency:.0f}% (+1)")
+
+    if steps_per_day is not None:
+        cog_max += 1
+        if steps_per_day < 3000: cog_score += 1; cog_factors.append(f"Very low activity <3000 steps (+1)")
+
+    if age is not None:
+        cog_max += 1
+        if age >= 65: cog_score += 1; cog_factors.append(f"Age >=65 (+1)")
+
+    if cog_max >= 4 and len(cog_factors) >= 2:
+        risk_pct = cog_score / cog_max * 100
+        risk_level = "low" if risk_pct < 25 else "moderate" if risk_pct < 50 else "elevated" if risk_pct < 75 else "high"
+        screenings.append({
+            "condition": "Cognitive Decline Risk",
+            "risk_level": risk_level,
+            "score": cog_score,
+            "max_score": cog_max,
+            "risk_pct": round(risk_pct, 1),
+            "factors": cog_factors,
+            "recommendation": "Consider neuropsychological evaluation; dual gait+activity decline is a strong predictor" if risk_pct >= 50 else "Low cognitive decline risk",
+            "references": ["Doi T et al. (2022) JAMA Network Open 5(5):e2214647",
+                           "Grande G et al. (2019) JAMA Neurology 76(10):1197-1205",
+                           "Witting W et al. (1990) Biol Psychiatry 27(6):563-572"]
+        })
+
+    # ------------------------------------------------------------------
+    # 18. SEIZURE RISK MARKERS
+    # (Regalia 2024, Pipatpratarnporn 2023)
+    # ------------------------------------------------------------------
+    sz_score = 0
+    sz_max = 0
+    sz_factors = []
+
+    if hr_ts and len(hr_ts) > 100:
+        # Nocturnal unexplained tachycardia episodes (HR >120 during sleep)
+        noct_tachy = [v for dt, v in hr_ts if 0 <= dt.hour <= 6 and v > 120]
+        noct_total = [v for dt, v in hr_ts if 0 <= dt.hour <= 6]
+        sz_max += 3
+        if len(noct_tachy) > 10: sz_score += 3; sz_factors.append(f"{len(noct_tachy)} nocturnal HR >120 episodes — recurrent (+3)")
+        elif len(noct_tachy) > 3: sz_score += 2; sz_factors.append(f"{len(noct_tachy)} nocturnal HR >120 episodes (+2)")
+        elif len(noct_tachy) > 0: sz_score += 1; sz_factors.append(f"{len(noct_tachy)} nocturnal HR >120 episode(s) (+1)")
+
+        # HR spikes >30 bpm within 30 seconds (stereotyped tachycardia events)
+        hr_sorted_sz = sorted(hr_ts, key=lambda x: x[0])
+        sudden_spikes = 0
+        for i in range(1, len(hr_sorted_sz)):
+            dt_diff = (hr_sorted_sz[i][0] - hr_sorted_sz[i-1][0]).total_seconds()
+            if 0 < dt_diff < 60:
+                if hr_sorted_sz[i][1] - hr_sorted_sz[i-1][1] > 30:
+                    sudden_spikes += 1
+        sz_max += 2
+        if sudden_spikes > 5: sz_score += 2; sz_factors.append(f"{sudden_spikes} sudden HR spike events >30 bpm (+2)")
+        elif sudden_spikes > 1: sz_score += 1; sz_factors.append(f"{sudden_spikes} sudden HR spike event(s) >30 bpm (+1)")
+
+    if hrv_sdnn is not None:
+        sz_max += 1
+        if hrv_sdnn < 20: sz_score += 1; sz_factors.append(f"Very low HRV SDNN <20 ms (+1)")
+
+    if sz_max >= 3 and len(sz_factors) >= 2:
+        risk_pct = sz_score / sz_max * 100
+        risk_level = "low" if risk_pct < 25 else "moderate" if risk_pct < 50 else "elevated" if risk_pct < 75 else "high"
+        screenings.append({
+            "condition": "Seizure Risk Markers",
+            "risk_level": risk_level,
+            "score": sz_score,
+            "max_score": sz_max,
+            "risk_pct": round(risk_pct, 1),
+            "factors": sz_factors,
+            "recommendation": "Consider EEG and neurological evaluation if elevated" if risk_pct >= 50 else "No concerning seizure-related HR patterns detected",
+            "references": ["Regalia G et al. (2024) Epilepsy & Behavior 158:109911",
+                           "Pipatpratarnporn C et al. (2023) Epilepsia 64(11):3046-3057",
+                           "Beniczky S et al. (2023) Epilepsy & Behavior 148:109455"]
+        })
+
+    # ------------------------------------------------------------------
+    # 19. SARCOPENIA RISK
+    # (EWGSOP2 Cruz-Jentoft 2019, Kim 2019, Galluzzo 2021)
+    # ------------------------------------------------------------------
+    sarc_score = 0
+    sarc_max = 0
+    sarc_factors = []
+
+    if walking_speed is not None:
+        sarc_max += 3
+        if walking_speed < 0.8: sarc_score += 3; sarc_factors.append(f"Walking speed <0.8 m/s — EWGSOP2 cutoff (+3)")
+        elif walking_speed < 1.0: sarc_score += 1; sarc_factors.append(f"Walking speed <1.0 m/s (+1)")
+
+    if stair_speed is not None:
+        sarc_max += 2
+        # stair_speed in floors/min or similar; low values suggest weakness
+        if stair_speed < 0.5: sarc_score += 2; sarc_factors.append(f"Very slow stair climb speed (+2)")
+        elif stair_speed < 0.8: sarc_score += 1; sarc_factors.append(f"Slow stair climb speed (+1)")
+
+    if steps_per_day is not None:
+        sarc_max += 2
+        if steps_per_day < 3000: sarc_score += 2; sarc_factors.append(f"Very low activity <3000 steps/day (+2)")
+        elif steps_per_day < 5000: sarc_score += 1; sarc_factors.append(f"Low activity <5000 steps/day (+1)")
+
+    if age is not None:
+        sarc_max += 2
+        if age >= 70: sarc_score += 2; sarc_factors.append(f"Age >=70 — major sarcopenia risk (+2)")
+        elif age >= 60: sarc_score += 1; sarc_factors.append(f"Age >=60 (+1)")
+
+    if weight_trend_kg_yr is not None:
+        sarc_max += 1
+        if weight_trend_kg_yr < -2: sarc_score += 1; sarc_factors.append(f"Weight loss trend — possible muscle mass loss (+1)")
+
+    if sarc_max >= 4 and len(sarc_factors) >= 2:
+        risk_pct = sarc_score / sarc_max * 100
+        risk_level = "low" if risk_pct < 25 else "moderate" if risk_pct < 50 else "elevated" if risk_pct < 75 else "high"
+        screenings.append({
+            "condition": "Sarcopenia Risk",
+            "risk_level": risk_level,
+            "score": sarc_score,
+            "max_score": sarc_max,
+            "risk_pct": round(risk_pct, 1),
+            "factors": sarc_factors,
+            "recommendation": "Consider DEXA body composition scan and grip strength test" if risk_pct >= 50 else "Low sarcopenia risk",
+            "references": ["Cruz-Jentoft AJ et al. (2019) Age and Ageing 48(1):16-31 (EWGSOP2)",
+                           "Kim H et al. (2019) Innovation in Aging 3(S1):S885",
+                           "Galluzzo V et al. (2021) Sensors 21(5):1786"]
+        })
+
+    # ------------------------------------------------------------------
+    # 20. FALL RISK
+    # (Apple Walking Steadiness, Howcroft 2021)
+    # ------------------------------------------------------------------
+    fall_score = 0
+    fall_max = 0
+    fall_factors = []
+
+    if walking_steadiness is not None:
+        fall_max += 3
+        if walking_steadiness == "Very Low": fall_score += 3; fall_factors.append("Walking Steadiness Very Low — >3x fall risk (+3)")
+        elif walking_steadiness == "Low": fall_score += 2; fall_factors.append("Walking Steadiness Low — elevated fall risk (+2)")
+
+    if walking_speed is not None:
+        fall_max += 3
+        if walking_speed < 0.8: fall_score += 3; fall_factors.append(f"Walking speed <0.8 m/s (+3)")
+        elif walking_speed < 1.0: fall_score += 1; fall_factors.append(f"Walking speed <1.0 m/s (+1)")
+
+    if age is not None:
+        fall_max += 2
+        if age >= 75: fall_score += 2; fall_factors.append(f"Age >=75 (+2)")
+        elif age >= 65: fall_score += 1; fall_factors.append(f"Age >=65 (+1)")
+
+    if steps_per_day is not None:
+        fall_max += 1
+        if steps_per_day < 3000: fall_score += 1; fall_factors.append(f"Very low activity <3000 steps (+1)")
+
+    if stair_speed is not None:
+        fall_max += 1
+        if stair_speed < 0.5: fall_score += 1; fall_factors.append(f"Slow stair speed — balance concern (+1)")
+
+    if fall_max >= 3 and len(fall_factors) >= 2:
+        risk_pct = fall_score / fall_max * 100
+        risk_level = "low" if risk_pct < 25 else "moderate" if risk_pct < 50 else "elevated" if risk_pct < 75 else "high"
+        screenings.append({
+            "condition": "Fall Risk",
+            "risk_level": risk_level,
+            "score": fall_score,
+            "max_score": fall_max,
+            "risk_pct": round(risk_pct, 1),
+            "factors": fall_factors,
+            "recommendation": "Consider fall prevention program and home safety assessment" if risk_pct >= 50 else "Low fall risk based on gait metrics",
+            "references": ["Apple Heart & Movement Study (2021+) Walking Steadiness",
+                           "Howcroft J et al. (2021) Scientific Reports 11:20459",
+                           "Ye B et al. (2020) JMIR mHealth uHealth 8(7):e19032"]
+        })
+
+    # ------------------------------------------------------------------
+    # 21. INSOMNIA
+    # (Morin 2017, Khosla 2018 AASM, Marino 2013)
+    # ------------------------------------------------------------------
+    ins_score = 0
+    ins_max = 0
+    ins_factors = []
+
+    if sleep_efficiency is not None:
+        ins_max += 3
+        # Wearable overestimates by 5-15%; use stricter threshold
+        if sleep_efficiency < 75: ins_score += 3; ins_factors.append(f"Very low sleep efficiency {sleep_efficiency:.0f}% (+3)")
+        elif sleep_efficiency < 80: ins_score += 2; ins_factors.append(f"Low sleep efficiency {sleep_efficiency:.0f}% — below 85% clinical threshold (wearable-corrected) (+2)")
+        elif sleep_efficiency < 85: ins_score += 1; ins_factors.append(f"Borderline sleep efficiency {sleep_efficiency:.0f}% (+1)")
+
+    if sleep_hours is not None:
+        ins_max += 2
+        if sleep_hours < 5: ins_score += 2; ins_factors.append(f"Very short sleep {sleep_hours:.1f}h (+2)")
+        elif sleep_hours < 6: ins_score += 1; ins_factors.append(f"Short sleep {sleep_hours:.1f}h (+1)")
+
+    if rhr is not None:
+        ins_max += 1
+        # Hyperarousal marker
+        if rhr > 80: ins_score += 1; ins_factors.append(f"Elevated RHR {rhr:.0f} bpm — possible hyperarousal (+1)")
+
+    if hrv_sdnn is not None:
+        ins_max += 1
+        if hrv_sdnn < 25: ins_score += 1; ins_factors.append(f"Low HRV — autonomic hyperarousal (+1)")
+
+    if ins_max >= 3 and len(ins_factors) >= 2:
+        risk_pct = ins_score / ins_max * 100
+        risk_level = "low" if risk_pct < 25 else "moderate" if risk_pct < 50 else "elevated" if risk_pct < 75 else "high"
+        screenings.append({
+            "condition": "Insomnia",
+            "risk_level": risk_level,
+            "score": ins_score,
+            "max_score": ins_max,
+            "risk_pct": round(risk_pct, 1),
+            "factors": ins_factors,
+            "recommendation": "Consider CBT-I (cognitive behavioral therapy for insomnia); avoid hypnotics as first-line" if risk_pct >= 50 else "Sleep markers within acceptable range",
+            "references": ["Morin CM et al. (2017) Nature Reviews Disease Primers 3:17026",
+                           "Khosla S et al. (2018) JCSM 14(7):1231-1237 (AASM actigraphy guideline)",
+                           "Marino M et al. (2013) Sleep 36(11):1747-1755"]
+        })
+
+    # ------------------------------------------------------------------
+    # 22. REM SLEEP BEHAVIOR DISORDER (Parkinson's prodrome)
+    # (Stefani 2023, Diago 2024)
+    # ------------------------------------------------------------------
+    rbd_score = 0
+    rbd_max = 0
+    rbd_factors = []
+
+    if sleep_rem_pct is not None:
+        rbd_max += 3
+        if sleep_rem_pct < 10: rbd_score += 3; rbd_factors.append(f"Very low REM {sleep_rem_pct:.0f}% — abnormal REM architecture (+3)")
+        elif sleep_rem_pct < 15: rbd_score += 2; rbd_factors.append(f"Low REM {sleep_rem_pct:.0f}% (+2)")
+        elif sleep_rem_pct < 20: rbd_score += 1; rbd_factors.append(f"Below-normal REM {sleep_rem_pct:.0f}% (+1)")
+
+    if sleep_deep_pct is not None:
+        rbd_max += 1
+        if sleep_deep_pct < 10: rbd_score += 1; rbd_factors.append(f"Low deep sleep {sleep_deep_pct:.0f}% — disrupted sleep architecture (+1)")
+
+    if age is not None:
+        rbd_max += 1
+        if age >= 60: rbd_score += 1; rbd_factors.append(f"Age >=60 — RBD risk increases with age (+1)")
+
+    if sleep_efficiency is not None:
+        rbd_max += 1
+        if sleep_efficiency < 80: rbd_score += 1; rbd_factors.append(f"Low sleep efficiency {sleep_efficiency:.0f}% (+1)")
+
+    if rbd_max >= 3 and len(rbd_factors) >= 2:
+        risk_pct = rbd_score / rbd_max * 100
+        risk_level = "low" if risk_pct < 25 else "moderate" if risk_pct < 50 else "elevated" if risk_pct < 75 else "high"
+        screenings.append({
+            "condition": "REM Sleep Behavior Disorder",
+            "risk_level": risk_level,
+            "score": rbd_score,
+            "max_score": rbd_max,
+            "risk_pct": round(risk_pct, 1),
+            "factors": rbd_factors,
+            "recommendation": "Consider video polysomnography; RBD converts to PD/DLB at ~6.3%/year" if risk_pct >= 50 else "No concerning RBD markers detected",
+            "references": ["Stefani A et al. (2023) Movement Disorders 38(5):847-855 (sens 88.1%, spec 100%)",
+                           "Diago EB et al. (2024) npj Digital Medicine 8:158 (multicenter validation)",
+                           "Iranzo A et al. (2006) Sleep Medicine 7:S34-S39"]
+        })
+
+    # ------------------------------------------------------------------
+    # 23. CIRCADIAN RHYTHM SLEEP DISORDER
+    # (Witting 1990, Cornelissen 2014, Lyall 2018)
+    # ------------------------------------------------------------------
+    crsd_score = 0
+    crsd_max = 0
+    crsd_factors = []
+
+    if is_val is not None:
+        crsd_max += 3
+        if is_val < 0.2: crsd_score += 3; crsd_factors.append(f"Extremely unstable circadian IS={is_val:.2f} (+3)")
+        elif is_val < 0.3: crsd_score += 2; crsd_factors.append(f"Very unstable circadian IS={is_val:.2f} (+2)")
+        elif is_val < 0.4: crsd_score += 1; crsd_factors.append(f"Unstable circadian IS={is_val:.2f} (+1)")
+
+    if iv_val is not None:
+        crsd_max += 3
+        if iv_val > 1.2: crsd_score += 3; crsd_factors.append(f"Extremely fragmented activity IV={iv_val:.2f} (+3)")
+        elif iv_val > 1.0: crsd_score += 2; crsd_factors.append(f"Highly fragmented activity IV={iv_val:.2f} (+2)")
+        elif iv_val > 0.7: crsd_score += 1; crsd_factors.append(f"Moderately fragmented activity IV={iv_val:.2f} (+1)")
+
+    if sleep_hours is not None:
+        crsd_max += 1
+        # Extreme sleep durations suggest circadian misalignment
+        if sleep_hours < 4 or sleep_hours > 11: crsd_score += 1; crsd_factors.append(f"Extreme sleep duration {sleep_hours:.1f}h (+1)")
+
+    if sleep_efficiency is not None:
+        crsd_max += 1
+        if sleep_efficiency < 75: crsd_score += 1; crsd_factors.append(f"Very low sleep efficiency {sleep_efficiency:.0f}% (+1)")
+
+    if crsd_max >= 4 and len(crsd_factors) >= 2:
+        risk_pct = crsd_score / crsd_max * 100
+        risk_level = "low" if risk_pct < 25 else "moderate" if risk_pct < 50 else "elevated" if risk_pct < 75 else "high"
+        screenings.append({
+            "condition": "Circadian Rhythm Sleep Disorder",
+            "risk_level": risk_level,
+            "score": crsd_score,
+            "max_score": crsd_max,
+            "risk_pct": round(risk_pct, 1),
+            "factors": crsd_factors,
+            "recommendation": "Consider actigraphy study and sleep specialist referral; prioritize regular sleep-wake schedule" if risk_pct >= 50 else "Circadian rhythm within acceptable range",
+            "references": ["Witting W et al. (1990) Biol Psychiatry 27(6):563-572",
+                           "Cornelissen G (2014) Theor Biol Med Model 11:16",
+                           "Khosla S et al. (2018) JCSM 14(7):1231-1237 (AASM actigraphy guideline)"]
+        })
+
+    # ------------------------------------------------------------------
+    # 24. ANEMIA INDICATORS
+    # (Li 2021 Nature Medicine, Yokusoglu 2007)
+    # ------------------------------------------------------------------
+    anemia_score = 0
+    anemia_max = 0
+    anemia_factors = []
+
+    if rhr is not None:
+        anemia_max += 2
+        if rhr > 90: anemia_score += 2; anemia_factors.append(f"Elevated RHR {rhr:.0f} bpm — compensatory tachycardia (+2)")
+        elif rhr > 80: anemia_score += 1; anemia_factors.append(f"RHR {rhr:.0f} bpm — mildly elevated (+1)")
+
+    if vo2max is not None:
+        anemia_max += 2
+        if vo2max < 25: anemia_score += 2; anemia_factors.append(f"Low VO2 Max {vo2max:.0f} — reduced O2 carrying capacity (+2)")
+        elif vo2max < 30: anemia_score += 1; anemia_factors.append(f"Below-average VO2 Max {vo2max:.0f} (+1)")
+
+    if hrv_sdnn is not None:
+        anemia_max += 1
+        if hrv_sdnn < 25: anemia_score += 1; anemia_factors.append(f"Low HRV SDNN — autonomic strain (+1)")
+
+    if steps_per_day is not None:
+        anemia_max += 1
+        if steps_per_day < 4000: anemia_score += 1; anemia_factors.append(f"Low activity <4000 steps/day — possible exercise intolerance (+1)")
+
+    if sex == "Female":
+        anemia_max += 1; anemia_score += 1; anemia_factors.append("Female sex — higher anemia prevalence (+1)")
+
+    if anemia_max >= 3 and len(anemia_factors) >= 2:
+        risk_pct = anemia_score / anemia_max * 100
+        risk_level = "low" if risk_pct < 25 else "moderate" if risk_pct < 50 else "elevated" if risk_pct < 75 else "high"
+        screenings.append({
+            "condition": "Anemia Indicators",
+            "risk_level": risk_level,
+            "score": anemia_score,
+            "max_score": anemia_max,
+            "risk_pct": round(risk_pct, 1),
+            "factors": anemia_factors,
+            "recommendation": "Consider complete blood count (CBC) with iron studies" if risk_pct >= 50 else "Low anemia risk based on wearable markers",
+            "references": ["Li X et al. (2021) Nature Medicine 27:1012-1021 (Stanford smartwatch study)",
+                           "Yokusoglu M et al. (2007) Arq Bras Cardiol 89(1):31-35"]
+        })
+
+    # ------------------------------------------------------------------
+    # 25. ANXIETY DISORDER
+    # (Chalmers 2014, Alvares 2013, Tomasi 2024)
+    # ------------------------------------------------------------------
+    anx_score = 0
+    anx_max = 0
+    anx_factors = []
+
+    if hrv_sdnn is not None:
+        anx_max += 3
+        # Age-adjusted thresholds per Chalmers meta-analysis
+        low_hrv_threshold = 20 if (age is not None and age < 35) else 15 if (age is not None and age < 50) else 12
+        if hrv_sdnn < low_hrv_threshold: anx_score += 3; anx_factors.append(f"HRV SDNN={hrv_sdnn:.0f}ms below age-adjusted threshold {low_hrv_threshold}ms (+3)")
+        elif hrv_sdnn < low_hrv_threshold + 10: anx_score += 1; anx_factors.append(f"HRV SDNN={hrv_sdnn:.0f}ms — borderline low (+1)")
+
+    if rhr is not None:
+        anx_max += 2
+        if rhr > 85: anx_score += 2; anx_factors.append(f"Elevated RHR {rhr:.0f} bpm (+2)")
+        elif rhr > 75: anx_score += 1; anx_factors.append(f"RHR {rhr:.0f} bpm — mildly elevated (+1)")
+
+    if sleep_efficiency is not None:
+        anx_max += 2
+        if sleep_efficiency < 75: anx_score += 2; anx_factors.append(f"Low sleep efficiency {sleep_efficiency:.0f}% — hyperarousal (+2)")
+        elif sleep_efficiency < 80: anx_score += 1; anx_factors.append(f"Sleep efficiency {sleep_efficiency:.0f}% — below normal (+1)")
+
+    if sleep_hours is not None:
+        anx_max += 1
+        if sleep_hours < 5: anx_score += 1; anx_factors.append(f"Very short sleep {sleep_hours:.1f}h (+1)")
+
+    if day_night_ratio is not None:
+        anx_max += 1
+        if day_night_ratio < 1.10: anx_score += 1; anx_factors.append(f"Non-dipping HR pattern — persistent sympathetic activation (+1)")
+    elif hr_ts:
+        day_hr = [v for dt, v in hr_ts if 8 <= dt.hour <= 20]
+        night_hr = [v for dt, v in hr_ts if 0 <= dt.hour <= 5]
+        if day_hr and night_hr:
+            dn = statistics.mean(day_hr) / statistics.mean(night_hr)
+            anx_max += 1
+            if dn < 1.10: anx_score += 1; anx_factors.append(f"Non-dipping HR pattern ratio={dn:.2f} (+1)")
+
+    if anx_max >= 4 and len(anx_factors) >= 2:
+        risk_pct = anx_score / anx_max * 100
+        risk_level = "low" if risk_pct < 25 else "moderate" if risk_pct < 50 else "elevated" if risk_pct < 75 else "high"
+        screenings.append({
+            "condition": "Anxiety Disorder",
+            "risk_level": risk_level,
+            "score": anx_score,
+            "max_score": anx_max,
+            "risk_pct": round(risk_pct, 1),
+            "factors": anx_factors,
+            "recommendation": "Consider GAD-7 screening questionnaire and clinical evaluation" if risk_pct >= 50 else "Low anxiety risk based on HRV and behavioral markers",
+            "references": ["Chalmers JA et al. (2014) Frontiers in Psychiatry 5:80 (meta-analysis, d=0.45-0.55)",
+                           "Alvares GA et al. (2013) Depress Anxiety 30(12):1128-1134",
+                           "Tomasi J et al. (2024) Psychophysiology 61(2):e14481"]
+        })
+
+    # ------------------------------------------------------------------
+    # 26. HEARING LOSS RISK
+    # (WHO 2022, NIOSH 1998)
+    # ------------------------------------------------------------------
+    hear_score = 0
+    hear_max = 0
+    hear_factors = []
+
+    if headphone_audio_db is not None:
+        hear_max += 4
+        if headphone_audio_db > 100: hear_score += 4; hear_factors.append(f"Headphone level {headphone_audio_db:.0f} dBA — immediate damage risk (+4)")
+        elif headphone_audio_db > 90: hear_score += 3; hear_factors.append(f"Headphone level {headphone_audio_db:.0f} dBA — unsafe (max 2h/day at this level) (+3)")
+        elif headphone_audio_db > 85: hear_score += 2; hear_factors.append(f"Headphone level {headphone_audio_db:.0f} dBA — exceeds NIOSH 8h REL (+2)")
+        elif headphone_audio_db > 80: hear_score += 1; hear_factors.append(f"Headphone level {headphone_audio_db:.0f} dBA — approaching caution threshold (+1)")
+
+    if age is not None:
+        hear_max += 1
+        if age >= 60: hear_score += 1; hear_factors.append(f"Age >=60 — presbycusis risk (+1)")
+
+    if hear_max >= 2 and len(hear_factors) >= 2:
+        risk_pct = hear_score / hear_max * 100
+        risk_level = "low" if risk_pct < 25 else "moderate" if risk_pct < 50 else "elevated" if risk_pct < 75 else "high"
+        screenings.append({
+            "condition": "Hearing Loss Risk",
+            "risk_level": risk_level,
+            "score": hear_score,
+            "max_score": hear_max,
+            "risk_pct": round(risk_pct, 1),
+            "factors": hear_factors,
+            "recommendation": "Reduce headphone volume; consider audiometry if prolonged high exposure" if risk_pct >= 50 else "Audio exposure within safe limits",
+            "references": ["WHO (2022) Global standard for safe listening venues and events",
+                           "NIOSH (1998) Criteria for Occupational Noise Exposure (85 dBA, 8h TWA)"]
+        })
+
+    # ------------------------------------------------------------------
+    # 27. CHRONIC FATIGUE INDICATORS (ME/CFS)
+    # (Escorihuela 2020, Davenport 2020)
+    # ------------------------------------------------------------------
+    cfs_score = 0
+    cfs_max = 0
+    cfs_factors = []
+
+    if hrv_sdnn is not None:
+        cfs_max += 2
+        if hrv_sdnn < 20: cfs_score += 2; cfs_factors.append(f"Very low HRV SDNN={hrv_sdnn:.0f}ms (+2)")
+        elif hrv_sdnn < 30: cfs_score += 1; cfs_factors.append(f"Low HRV SDNN={hrv_sdnn:.0f}ms (+1)")
+
+    if steps_per_day is not None:
+        cfs_max += 2
+        if steps_per_day < 3000: cfs_score += 2; cfs_factors.append(f"Very low activity <3000 steps/day (+2)")
+        elif steps_per_day < 5000: cfs_score += 1; cfs_factors.append(f"Low activity <5000 steps/day (+1)")
+
+    if sleep_hours is not None and sleep_efficiency is not None:
+        cfs_max += 2
+        # Non-restorative sleep: high duration with low efficiency
+        if sleep_hours > 9 and sleep_efficiency < 80: cfs_score += 2; cfs_factors.append(f"Non-restorative sleep: {sleep_hours:.1f}h but {sleep_efficiency:.0f}% efficiency (+2)")
+        elif sleep_hours > 8 and sleep_efficiency < 85: cfs_score += 1; cfs_factors.append(f"Possibly non-restorative sleep pattern (+1)")
+    elif sleep_hours is not None:
+        cfs_max += 1
+        if sleep_hours > 10: cfs_score += 1; cfs_factors.append(f"Excessive sleep {sleep_hours:.1f}h (+1)")
+
+    if rhr is not None and steps_per_day is not None:
+        cfs_max += 1
+        # Elevated HR despite low activity
+        if rhr > 80 and steps_per_day < 5000: cfs_score += 1; cfs_factors.append(f"Disproportionate RHR for low activity level (+1)")
+
+    if cfs_max >= 4 and len(cfs_factors) >= 2:
+        risk_pct = cfs_score / cfs_max * 100
+        risk_level = "low" if risk_pct < 25 else "moderate" if risk_pct < 50 else "elevated" if risk_pct < 75 else "high"
+        screenings.append({
+            "condition": "Chronic Fatigue Indicators",
+            "risk_level": risk_level,
+            "score": cfs_score,
+            "max_score": cfs_max,
+            "risk_pct": round(risk_pct, 1),
+            "factors": cfs_factors,
+            "recommendation": "Consider CFS/ME evaluation; rule out other causes (thyroid, anemia, depression)" if risk_pct >= 50 else "No significant chronic fatigue pattern detected",
+            "references": ["Escorihuela RM et al. (2020) J Transl Med 18:173",
+                           "Davenport TE et al. (2020) Front Physiol (activity patterns in CFS)",
+                           "Siepmann M et al. (2021) Sensors 21(11):3746"]
+        })
+
+    # ------------------------------------------------------------------
+    # 28. INFECTION / FEVER DETECTION
+    # (Mishra 2020 Nature, Grant 2020, Natarajan 2020)
+    # ------------------------------------------------------------------
+    inf_score = 0
+    inf_max = 0
+    inf_factors = []
+
+    if rhr is not None:
+        inf_max += 2
+        # Acute RHR elevation >7 bpm above baseline (use absolute thresholds as proxy)
+        if rhr > 90: inf_score += 2; inf_factors.append(f"Elevated RHR {rhr:.0f} bpm — possible infection response (+2)")
+        elif rhr > 80: inf_score += 1; inf_factors.append(f"RHR {rhr:.0f} bpm — mildly elevated (+1)")
+
+    if wrist_temp is not None:
+        inf_max += 3
+        if wrist_temp >= 37.5: inf_score += 3; inf_factors.append(f"Wrist temp {wrist_temp:.1f}C >=37.5 — fever range (sens 80%, spec 98%) (+3)")
+        elif wrist_temp >= 36.5: inf_score += 1; inf_factors.append(f"Wrist temp {wrist_temp:.1f}C — mildly elevated (+1)")
+
+    if resp_rate is not None:
+        inf_max += 2
+        if resp_rate > 22: inf_score += 2; inf_factors.append(f"Elevated respiratory rate {resp_rate:.0f}/min (+2)")
+        elif resp_rate > 18: inf_score += 1; inf_factors.append(f"Borderline respiratory rate {resp_rate:.0f}/min (+1)")
+
+    if hrv_sdnn is not None:
+        inf_max += 1
+        if hrv_sdnn < 20: inf_score += 1; inf_factors.append(f"Acutely depressed HRV SDNN={hrv_sdnn:.0f}ms (+1)")
+
+    if steps_per_day is not None:
+        inf_max += 1
+        if steps_per_day < 2000: inf_score += 1; inf_factors.append(f"Very low activity <2000 steps — acute activity decrease (+1)")
+
+    if sleep_hours is not None:
+        inf_max += 1
+        if sleep_hours > 10: inf_score += 1; inf_factors.append(f"Excessive sleep {sleep_hours:.1f}h — possible illness response (+1)")
+
+    if inf_max >= 3 and len(inf_factors) >= 2:
+        risk_pct = inf_score / inf_max * 100
+        risk_level = "low" if risk_pct < 25 else "moderate" if risk_pct < 50 else "elevated" if risk_pct < 75 else "high"
+        screenings.append({
+            "condition": "Infection / Fever Detection",
+            "risk_level": risk_level,
+            "score": inf_score,
+            "max_score": inf_max,
+            "risk_pct": round(risk_pct, 1),
+            "factors": inf_factors,
+            "recommendation": "Monitor symptoms; consult physician if febrile symptoms present" if risk_pct >= 50 else "No acute infection markers detected",
+            "references": ["Mishra T et al. (2020) Nature Biomedical Engineering 4:1208-1220",
+                           "Grant AD et al. (2020) Scientific Reports 10:21640",
+                           "Natarajan A et al. (2020) npj Digital Medicine 3:156"]
+        })
+
+    # ------------------------------------------------------------------
+    # 29. VITAMIN D DEFICIENCY PROXY
+    # (Holick 2007 NEJM — theoretical only)
+    # ------------------------------------------------------------------
+    vitd_score = 0
+    vitd_max = 0
+    vitd_factors = []
+
+    if daylight_minutes is not None:
+        vitd_max += 3
+        if daylight_minutes < 10: vitd_score += 3; vitd_factors.append(f"Very low daylight exposure {daylight_minutes:.0f} min/day (+3)")
+        elif daylight_minutes < 20: vitd_score += 2; vitd_factors.append(f"Low daylight exposure {daylight_minutes:.0f} min/day (+2)")
+        elif daylight_minutes < 30: vitd_score += 1; vitd_factors.append(f"Borderline daylight exposure {daylight_minutes:.0f} min/day (+1)")
+
+    if steps_per_day is not None:
+        vitd_max += 1
+        if steps_per_day < 2000: vitd_score += 1; vitd_factors.append(f"Very sedentary <2000 steps — likely homebound/indoor (+1)")
+
+    if age is not None:
+        vitd_max += 1
+        if age >= 65: vitd_score += 1; vitd_factors.append(f"Age >=65 — reduced skin synthesis capacity (+1)")
+
+    if vitd_max >= 3 and len(vitd_factors) >= 2:
+        risk_pct = vitd_score / vitd_max * 100
+        risk_level = "low" if risk_pct < 25 else "moderate" if risk_pct < 50 else "elevated" if risk_pct < 75 else "high"
+        screenings.append({
+            "condition": "Vitamin D Deficiency Proxy",
+            "risk_level": risk_level,
+            "score": vitd_score,
+            "max_score": vitd_max,
+            "risk_pct": round(risk_pct, 1),
+            "factors": vitd_factors,
+            "recommendation": "Consider 25(OH)D blood test; increase outdoor sun exposure" if risk_pct >= 50 else "Daylight exposure appears adequate",
+            "references": ["Holick MF (2007) NEJM 357:266-281",
+                           "Note: This is a WEAK proxy — Vitamin D status requires blood test"]
+        })
+
+    # ------------------------------------------------------------------
+    # 30. DEHYDRATION INDICATORS
+    # (Li 2021, Seshadri 2021)
+    # ------------------------------------------------------------------
+    dehy_score = 0
+    dehy_max = 0
+    dehy_factors = []
+
+    if rhr is not None:
+        dehy_max += 2
+        # Acute RHR elevation as dehydration marker
+        if rhr > 90: dehy_score += 2; dehy_factors.append(f"Elevated RHR {rhr:.0f} bpm — compensatory tachycardia (+2)")
+        elif rhr > 80: dehy_score += 1; dehy_factors.append(f"RHR {rhr:.0f} bpm — mildly elevated (+1)")
+
+    if wrist_temp is not None:
+        dehy_max += 2
+        # Elevated wrist temp from reduced heat dissipation
+        if wrist_temp > 36.5: dehy_score += 2; dehy_factors.append(f"Elevated wrist temp {wrist_temp:.1f}C — reduced heat dissipation (+2)")
+        elif wrist_temp > 35.5: dehy_score += 1; dehy_factors.append(f"Wrist temp {wrist_temp:.1f}C — mildly elevated (+1)")
+
+    if weight_trend_kg_yr is not None:
+        dehy_max += 1
+        # Acute weight loss proxy (weight_trend_kg_yr is annualized, but sudden drops suggest dehydration)
+        if weight_trend_kg_yr < -5: dehy_score += 1; dehy_factors.append(f"Rapid weight loss trend (+1)")
+
+    if hrv_sdnn is not None:
+        dehy_max += 1
+        if hrv_sdnn < 25: dehy_score += 1; dehy_factors.append(f"Low HRV — autonomic stress (+1)")
+
+    if dehy_max >= 3 and len(dehy_factors) >= 2:
+        risk_pct = dehy_score / dehy_max * 100
+        risk_level = "low" if risk_pct < 25 else "moderate" if risk_pct < 50 else "elevated" if risk_pct < 75 else "high"
+        screenings.append({
+            "condition": "Dehydration Indicators",
+            "risk_level": risk_level,
+            "score": dehy_score,
+            "max_score": dehy_max,
+            "risk_pct": round(risk_pct, 1),
+            "factors": dehy_factors,
+            "recommendation": "Increase fluid intake; monitor during exercise and hot weather" if risk_pct >= 50 else "No acute dehydration markers detected",
+            "references": ["Li X et al. (2021) Nature Medicine 27:1012-1021",
+                           "Seshadri DR et al. (2021) Sensors 21(13):4469"]
+        })
+
     # Sort by risk percentage descending
     screenings.sort(key=lambda x: -x["risk_pct"])
 
@@ -1671,6 +2765,13 @@ def main():
     rhr_daily = {}
     sleep_records = []
     height_ts = []
+    walking_speed_ts = []
+    stair_speed_ts = []
+    walking_steadiness_ts = []
+    wrist_temp_ts = []
+    headphone_audio_ts = []
+    resp_rate_ts = []
+    daylight_ts = []
     me_info = {}
     workouts = []
     xml_parse_error = None
@@ -1711,6 +2812,20 @@ def main():
                             rhr_daily[dt.strftime("%Y-%m-%d")] = val
                         elif rtype == "HKQuantityTypeIdentifierHeight":
                             height_ts.append((dt, val))
+                        elif rtype == "HKQuantityTypeIdentifierWalkingSpeed":
+                            walking_speed_ts.append((dt, val))
+                        elif rtype == "HKQuantityTypeIdentifierStairAscentSpeed":
+                            stair_speed_ts.append((dt, val))
+                        elif rtype == "HKQuantityTypeIdentifierAppleWalkingSteadiness":
+                            walking_steadiness_ts.append((dt, val))
+                        elif rtype == "HKQuantityTypeIdentifierAppleSleepingWristTemperature":
+                            wrist_temp_ts.append((dt, val))
+                        elif rtype == "HKQuantityTypeIdentifierHeadphoneAudioExposure":
+                            headphone_audio_ts.append((dt, val))
+                        elif rtype == "HKQuantityTypeIdentifierRespiratoryRate":
+                            resp_rate_ts.append((dt, val))
+                        elif rtype == "HKQuantityTypeIdentifierTimeInDaylight":
+                            daylight_ts.append((dt, val))
                     except ValueError:
                         pass
                 if rtype == "HKCategoryTypeIdentifierSleepAnalysis" and dt:
@@ -1733,7 +2848,9 @@ def main():
         print(f"  WARNING: {xml_parse_error}", file=sys.stderr)
 
     for ts in [hr_ts, glucose_ts, steps_seg, active_cal_seg, hrv_ts, spo2_ts,
-               weight_ts, bf_ts, vo2_ts, height_ts]:
+               weight_ts, bf_ts, vo2_ts, height_ts, walking_speed_ts,
+               stair_speed_ts, walking_steadiness_ts, wrist_temp_ts,
+               headphone_audio_ts, resp_rate_ts, daylight_ts]:
         ts.sort(key=lambda x: x[0])
 
     # ---- Derived daily aggregates ----
@@ -2368,6 +3485,64 @@ def main():
     # === DISEASE RISK SCREENING ===
     print("  Disease risk screening...", file=sys.stderr)
     try:
+        # Compute aggregated values for new screening parameters
+        avg_walking_speed = statistics.mean([v for _, v in walking_speed_ts]) if walking_speed_ts else None
+        avg_stair_speed = statistics.mean([v for _, v in stair_speed_ts]) if stair_speed_ts else None
+        avg_wrist_temp = statistics.mean([v for _, v in wrist_temp_ts]) if wrist_temp_ts else None
+        avg_headphone_db = statistics.mean([v for _, v in headphone_audio_ts]) if headphone_audio_ts else None
+        avg_resp_rate = statistics.mean([v for _, v in resp_rate_ts]) if resp_rate_ts else None
+
+        # Walking steadiness: use most recent classification
+        # Apple reports as 0-1 value; map to categories
+        ws_classification = None
+        if walking_steadiness_ts:
+            ws_val = walking_steadiness_ts[-1][1]
+            if ws_val < 0.25:
+                ws_classification = "Very Low"
+            elif ws_val < 0.50:
+                ws_classification = "Low"
+            else:
+                ws_classification = "OK"
+
+        # Daylight: compute daily average in minutes
+        avg_daylight_min = None
+        if daylight_ts:
+            d_daylight = defaultdict(float)
+            for dt_dl, v in daylight_ts:
+                d_daylight[dt_dl.strftime("%Y-%m-%d")] += v
+            if d_daylight:
+                avg_daylight_min = statistics.mean(list(d_daylight.values()))
+
+        # Sleep efficiency and stage percentages from sleep records
+        sleep_eff_val = None
+        sleep_deep_pct_val = None
+        sleep_rem_pct_val = None
+        if sleep_records:
+            total_in_bed = 0
+            total_asleep = 0
+            total_deep = 0
+            total_rem = 0
+            for s_start, s_end, s_cat in sleep_records:
+                dur_s = (s_end - s_start).total_seconds()
+                if dur_s <= 0 or dur_s > 50400:  # skip >14h
+                    continue
+                if "InBed" in s_cat:
+                    total_in_bed += dur_s
+                elif "Awake" in s_cat:
+                    total_in_bed += dur_s  # awake in bed counts as in-bed time
+                else:
+                    total_asleep += dur_s
+                    total_in_bed += dur_s
+                    if "Deep" in s_cat:
+                        total_deep += dur_s
+                    elif "REM" in s_cat:
+                        total_rem += dur_s
+            if total_in_bed > 0:
+                sleep_eff_val = total_asleep / total_in_bed * 100
+            if total_asleep > 0:
+                sleep_deep_pct_val = total_deep / total_asleep * 100
+                sleep_rem_pct_val = total_rem / total_asleep * 100
+
         risk_screening = disease_risk_screening(
             age=age, sex=sex, bmi=bmi,
             rhr=rhr_avg, hrv_sdnn=hrv_avg, vo2max=vo2_avg,
@@ -2380,6 +3555,16 @@ def main():
             iv_val=result.get("circadian_quantification", {}).get("hr_rhythm_stability", {}).get("intradaily_variability") if isinstance(result.get("circadian_quantification", {}).get("hr_rhythm_stability"), dict) else None,
             day_night_ratio=None,  # computed inside
             weight_trend_kg_yr=(result.get("biological_age_models", {}) or {}).get("biological_age", {}).get("components", {}).get("bmi_delta"),
+            walking_speed=avg_walking_speed,
+            stair_speed=avg_stair_speed,
+            walking_steadiness=ws_classification,
+            wrist_temp=avg_wrist_temp,
+            daylight_minutes=avg_daylight_min,
+            headphone_audio_db=avg_headphone_db,
+            resp_rate=avg_resp_rate,
+            sleep_efficiency=sleep_eff_val,
+            sleep_deep_pct=sleep_deep_pct_val,
+            sleep_rem_pct=sleep_rem_pct_val,
         )
         if risk_screening:
             result["disease_risk_screening"] = risk_screening
