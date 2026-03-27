@@ -343,10 +343,12 @@ def generate_css():
     html {{ scroll-behavior: smooth; }}
     body {{
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-        font-size: 15px;
-        line-height: 1.6;
+        font-size: 13px;
+        line-height: 1.55;
         color: var(--text);
         background: var(--bg);
+        -webkit-font-smoothing: antialiased;
+        font-feature-settings: 'tnum';
     }}
     /* Navigation */
     .nav-sidebar {{
@@ -362,19 +364,19 @@ def generate_css():
         padding: 20px 0;
     }}
     .nav-sidebar .nav-title {{
-        font-size: 14px;
+        font-size: 10px;
         font-weight: 700;
         color: var(--primary);
         padding: 8px 20px;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.6px;
         text-transform: uppercase;
     }}
     .nav-sidebar a {{
         display: block;
-        padding: 7px 20px 7px 24px;
+        padding: 5px 20px 5px 24px;
         color: var(--text-secondary);
         text-decoration: none;
-        font-size: 13px;
+        font-size: 11px;
         border-left: 3px solid transparent;
         transition: all 0.15s;
     }}
@@ -397,17 +399,18 @@ def generate_css():
     .report-header {{
         background: linear-gradient(135deg, {C["primary"]} 0%, {C["primary_dark"]} 100%);
         color: #fff;
-        padding: 48px 48px 36px;
+        padding: 32px 40px 28px;
     }}
     .report-header h1 {{
-        font-size: 28px;
+        font-size: 22px;
         font-weight: 700;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
+        letter-spacing: -0.3px;
     }}
     .report-header .subtitle {{
-        font-size: 15px;
-        opacity: 0.85;
-        margin-bottom: 24px;
+        font-size: 12px;
+        opacity: 0.8;
+        margin-bottom: 20px;
     }}
     .header-stats {{
         display: flex;
@@ -418,33 +421,34 @@ def generate_css():
         text-align: center;
     }}
     .header-stat .stat-value {{
-        font-size: 24px;
+        font-size: 18px;
         font-weight: 700;
     }}
     .header-stat .stat-label {{
-        font-size: 12px;
-        opacity: 0.75;
+        font-size: 10px;
+        opacity: 0.7;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.4px;
     }}
     /* Sections */
     .section {{
-        padding: 32px 48px;
+        padding: 24px 40px;
     }}
     .section + .section {{
         border-top: 1px solid var(--border-light);
     }}
     .section-title {{
-        font-size: 20px;
+        font-size: 16px;
         font-weight: 700;
         color: var(--text);
-        padding-left: 16px;
-        border-left: 4px solid var(--primary);
-        margin-bottom: 24px;
+        padding-left: 14px;
+        border-left: 3px solid var(--primary);
+        margin-bottom: 20px;
         line-height: 1.3;
+        letter-spacing: -0.2px;
     }}
     .section-subtitle {{
-        font-size: 15px;
+        font-size: 13px;
         font-weight: 600;
         color: var(--text);
         margin-bottom: 12px;
@@ -460,12 +464,12 @@ def generate_css():
         box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     }}
     .card-header {{
-        font-size: 14px;
+        font-size: 11px;
         font-weight: 600;
-        color: var(--text-secondary);
+        color: var(--text-muted);
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 16px;
+        letter-spacing: 0.4px;
+        margin-bottom: 12px;
     }}
     .card-grid {{
         display: grid;
@@ -491,32 +495,33 @@ def generate_css():
     .metric-card {{
         background: var(--bg-card);
         border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 16px 20px;
+        border-radius: 8px;
+        padding: 12px 16px;
         box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     }}
     .metric-label {{
-        font-size: 12px;
+        font-size: 10px;
         color: var(--text-muted);
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 4px;
+        letter-spacing: 0.4px;
+        margin-bottom: 2px;
     }}
     .metric-value {{
-        font-size: 28px;
+        font-size: 20px;
         font-weight: 700;
         color: var(--text);
         line-height: 1.2;
+        letter-spacing: -0.3px;
     }}
     .metric-unit {{
-        font-size: 14px;
+        font-size: 11px;
         color: var(--text-muted);
         font-weight: 400;
     }}
     .metric-note {{
-        font-size: 12px;
+        font-size: 10px;
         color: var(--text-secondary);
-        margin-top: 4px;
+        margin-top: 3px;
     }}
     /* Alert cards */
     .alert-card {{
@@ -539,11 +544,11 @@ def generate_css():
     }}
     .alert-card .alert-title {{
         font-weight: 600;
-        font-size: 14px;
-        margin-bottom: 4px;
+        font-size: 12px;
+        margin-bottom: 3px;
     }}
     .alert-card .alert-detail {{
-        font-size: 13px;
+        font-size: 11px;
         color: var(--text-secondary);
     }}
     /* Evidence badges */
@@ -599,23 +604,23 @@ def generate_css():
     }}
     /* AI Narrative placeholders */
     .ai-narrative {{
-        padding: 16px 20px;
-        margin: 12px 0;
+        padding: 12px 16px;
+        margin: 8px 0;
         border-left: 3px solid {C["primary"]};
         background: {C["bg_alt"]};
         border-radius: 0 8px 8px 0;
-        font-size: 14px;
-        line-height: 1.7;
-        min-height: 20px;
+        font-size: 12px;
+        line-height: 1.6;
+        min-height: 16px;
     }}
     .ai-narrative:empty::before {{
         content: '';
     }}
-    .ai-narrative h4 {{ margin: 12px 0 6px; font-size: 15px; font-weight: 600; }}
-    .ai-narrative ul, .ai-narrative ol {{ margin: 8px 0; padding-left: 20px; }}
-    .ai-narrative li {{ margin: 4px 0; }}
+    .ai-narrative h4 {{ margin: 10px 0 4px; font-size: 13px; font-weight: 600; }}
+    .ai-narrative ul, .ai-narrative ol {{ margin: 6px 0; padding-left: 18px; }}
+    .ai-narrative li {{ margin: 3px 0; }}
     .ai-narrative strong {{ color: {C["primary_dark"]}; }}
-    .ai-narrative p {{ margin: 8px 0; }}
+    .ai-narrative p {{ margin: 6px 0; }}
     .recommendation {{
         background: {C["info_bg"]};
         border-radius: 8px;
@@ -690,17 +695,20 @@ def generate_css():
         min-width: 180px;
     }}
     .comparison-box .comp-value {{
-        font-size: 48px;
-        font-weight: 800;
+        font-size: 30px;
+        font-weight: 700;
         line-height: 1.1;
+        letter-spacing: -0.5px;
     }}
     .comparison-box .comp-label {{
-        font-size: 13px;
-        margin-top: 6px;
+        font-size: 10px;
+        margin-top: 4px;
         font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
     }}
     .comparison-vs {{
-        font-size: 24px;
+        font-size: 18px;
         font-weight: 300;
         color: var(--text-muted);
     }}
@@ -757,7 +765,7 @@ def generate_css():
 # SVG Chart Generators
 # ============================================================================
 
-def svg_circular_gauge(score, label="", size=140, stroke_width=12):
+def svg_circular_gauge(score, label="", size=110, stroke_width=8):
     """Circular gauge for scores 0-100 with letter grade."""
     if score is None:
         score = 0
@@ -774,9 +782,9 @@ def svg_circular_gauge(score, label="", size=140, stroke_width=12):
   <circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{color}" stroke-width="{stroke_width}"
     stroke-dasharray="{filled:.1f} {gap:.1f}" stroke-dashoffset="{circumference * 0.25:.1f}"
     stroke-linecap="round" transform="rotate(-90 {cx} {cy})" />
-  <text x="{cx}" y="{cy - 8}" text-anchor="middle" font-size="28" font-weight="800" fill="{color}">{letter}</text>
-  <text x="{cx}" y="{cy + 14}" text-anchor="middle" font-size="16" font-weight="600" fill="{COLORS["text"]}">{score}</text>
-  <text x="{cx}" y="{cy + 30}" text-anchor="middle" font-size="10" fill="{COLORS["text_muted"]}">/ 100</text>
+  <text x="{cx}" y="{cy - 4}" text-anchor="middle" font-size="22" font-weight="700" fill="{color}">{letter}</text>
+  <text x="{cx}" y="{cy + 12}" text-anchor="middle" font-size="12" font-weight="600" fill="{COLORS["text"]}">{score}</text>
+  <text x="{cx}" y="{cy + 24}" text-anchor="middle" font-size="8" fill="{COLORS["text_muted"]}">/ 100</text>
 </svg>'''
 
 
