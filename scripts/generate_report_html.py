@@ -478,7 +478,7 @@ def generate_css():
     }}
     .card-grid-2 {{
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
         gap: 16px;
     }}
     .card-grid-3 {{
@@ -1944,9 +1944,12 @@ def section_glucose(base, adv):
 
     return f'''<div class="section" id="blood-glucose">
   <h2 class="section-title">{t("glucose_cgm")}</h2>
-  <div class="card-grid-2">
-    <div class="card"><div class="card-header">Time in Range</div>{tir_donut}{tir_bar}</div>
-    <div class="card">{circadian_chart if circadian_chart else "<p>No 24h glucose data</p>"}</div>
+  <div class="card" style="margin-bottom:16px">{circadian_chart if circadian_chart else "<p>No 24h glucose data</p>"}</div>
+  <div class="card" style="margin-bottom:16px"><div class="card-header">Time in Range</div>
+    <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+      <div>{tir_donut}</div>
+      <div style="flex:1;min-width:280px">{tir_bar}</div>
+    </div>
   </div>
   <div class="card-grid" style="margin-bottom:16px">
     <div class="metric-card">
