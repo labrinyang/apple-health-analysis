@@ -355,7 +355,7 @@ def generate_css():
         position: fixed;
         top: 0;
         left: 0;
-        width: 260px;
+        width: 220px;
         height: 100vh;
         background: var(--bg-card);
         border-right: 1px solid var(--border);
@@ -392,7 +392,7 @@ def generate_css():
         background: {C["bg_alt"]};
     }}
     .main-content {{
-        margin-left: 260px;
+        margin-left: 220px;
         padding: 0;
     }}
     /* Header */
@@ -432,18 +432,18 @@ def generate_css():
     }}
     /* Sections */
     .section {{
-        padding: 24px 40px;
+        padding: 20px 36px;
     }}
     .section + .section {{
         border-top: 1px solid var(--border-light);
     }}
     .section-title {{
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 700;
         color: var(--text);
-        padding-left: 14px;
+        padding-left: 12px;
         border-left: 3px solid var(--primary);
-        margin-bottom: 20px;
+        margin-bottom: 16px;
         line-height: 1.3;
         letter-spacing: -0.2px;
     }}
@@ -458,10 +458,10 @@ def generate_css():
     .card {{
         background: var(--bg-card);
         border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 24px;
-        margin-bottom: 16px;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        border-radius: 10px;
+        padding: 18px;
+        margin-bottom: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }}
     .card-header {{
         font-size: 11px;
@@ -473,23 +473,23 @@ def generate_css():
     }}
     .card-grid {{
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 16px;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
     }}
     .card-grid-2 {{
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-        gap: 16px;
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 12px;
     }}
     .card-grid-3 {{
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
+        gap: 10px;
     }}
     .card-grid-4 {{
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 16px;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 10px;
     }}
     /* Metric cards */
     .metric-card {{
@@ -525,10 +525,10 @@ def generate_css():
     }}
     /* Alert cards */
     .alert-card {{
-        border-radius: 10px;
-        padding: 16px 20px;
-        margin-bottom: 12px;
-        border-left: 4px solid;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 8px;
+        border-left: 3px solid;
     }}
     .alert-card.alert-high {{
         background: {C["danger_bg"]};
@@ -566,11 +566,11 @@ def generate_css():
     .data-table {{
         width: 100%;
         border-collapse: collapse;
-        font-size: 13px;
+        font-size: 11px;
     }}
     .data-table th {{
         background: var(--bg-alt);
-        color: var(--text-secondary);
+        color: var(--text-muted);
         font-weight: 600;
         text-align: left;
         padding: 10px 12px;
@@ -580,7 +580,7 @@ def generate_css():
         letter-spacing: 0.3px;
     }}
     .data-table td {{
-        padding: 8px 12px;
+        padding: 6px 10px;
         border-bottom: 1px solid var(--border-light);
         vertical-align: middle;
     }}
@@ -690,9 +690,9 @@ def generate_css():
     }}
     .comparison-box {{
         text-align: center;
-        padding: 24px 32px;
-        border-radius: 12px;
-        min-width: 180px;
+        padding: 16px 24px;
+        border-radius: 10px;
+        min-width: 140px;
     }}
     .comparison-box .comp-value {{
         font-size: 30px;
