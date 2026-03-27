@@ -1,0 +1,2 @@
+# Mark workspace as export-ignore so skills.sh doesn't install eval results
+apple-health-analysis-workspace/** export-ignore

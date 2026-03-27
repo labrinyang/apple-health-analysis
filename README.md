@@ -11,19 +11,30 @@ A Claude Code skill that transforms raw Apple Health XML exports into comprehens
 
 ## Install
 
-```bash
-# Step 1: Add the marketplace
-claude plugins marketplace add labrinyang/apple-health-analysis
+### Via skills.sh (recommended — works with Claude Code, Cursor, Copilot, Codex, Gemini CLI, and more)
 
-# Step 2: Install the plugin
+```bash
+npx skills add labrinyang/apple-health-analysis
+```
+
+### Via Claude Code Plugin CLI
+
+```bash
+claude plugins marketplace add labrinyang/apple-health-analysis
 claude plugins install apple-health-analysis
 ```
 
-Restart Claude Code, then say: **"Analyze my Apple Health data"** — the skill triggers automatically.
+### Verify
+
+Restart your AI coding agent, then say: **"Analyze my Apple Health data"** — the skill triggers automatically.
 
 ### Update
 
 ```bash
+# skills.sh
+npx skills update
+
+# Claude Code
 claude plugins marketplace update apple-health-analysis
 claude plugins update apple-health-analysis
 ```
