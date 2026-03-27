@@ -1,8 +1,10 @@
 # Apple Health Deep Analysis
 
-**Clinical-grade health data analysis for Apple Health exports.**
+**Clinical-grade<sup>*</sup> health data analysis for Apple Health exports.**
 
 Transforms raw Apple Health XML into comprehensive health assessment reports — 21 statistical methods, 30 disease risk screenings, 35+ SVG visualizations, citing 59 peer-reviewed papers. Works with Claude Code, Cursor, Copilot, Codex, Gemini CLI, and 8+ other AI agents.
+
+> <sup>*</sup> **"Clinical-grade" refers to the use of peer-reviewed statistical methods and published clinical reference ranges — NOT to regulatory approval or diagnostic validity. This tool is for informational and educational purposes only. It is not a medical device, does not provide medical advice, and has not been validated in clinical trials or cleared by any regulatory body (FDA, CE, etc.). All disease risk screenings are preliminary estimates that require confirmation by a licensed healthcare provider. Do not make medical decisions based solely on this tool's output.**
 
 <img src="https://img.shields.io/badge/skills.sh-compatible-D97757?style=for-the-badge"/>
 <img src="https://img.shields.io/badge/Papers-59_cited-3B7DD8?style=for-the-badge"/>
