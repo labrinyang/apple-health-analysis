@@ -11,7 +11,7 @@
     {
       "name": "apple-health-analysis",
       "description": "Clinical-grade Apple Health analysis with 21 peer-reviewed statistical methods, 30 disease risk screenings (T2D, CVD, OSA, Parkinson's, etc.), 35+ SVG visualizations, and biological age estimation. Cites 59 papers.",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "author": {
         "name": "labrinyang"
       },

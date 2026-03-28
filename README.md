@@ -235,6 +235,13 @@ apple-health-analysis/                       10,198 lines total
 
 ## Changelog
 
+### v2.1.0 (2026-03-27)
+- **Chart sizing fix**: All wide SVGs constrained to max-width 640px
+- **Hover tooltips**: 75+ interactive data-tip targets across all chart types (dots, bars, donut segments, heatmap cells, gauges)
+- **Typography overhaul**: Tightened type scale (body 13px, metric values 20px, gauges 110px)
+- **Layout density**: Tighter spacing (card gap 10px, section padding 20×36, nav 220px)
+- **Glucose chart layout**: 24h circadian curve moved to full-width row
+
 ### v2.0.0 (2026-03-27)
 - **30 Disease Risk Screenings** across 8 categories (endocrine, cardiovascular, respiratory, neurological, musculoskeletal, sleep, psychiatric, other)
 - **1,233-line evidence base** (`wearable_screening_literature.md`) covering 28 screening algorithms
